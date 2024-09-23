@@ -1,0 +1,22 @@
+
+services:
+  backend:
+    build:
+      context: ./API    # Thư mục chứa Dockerfile của backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./API:/usr/src/app
+    environment:
+      NODE_ENV: development
+
+  frontend:
+    build:
+      context: ./client  # Thư mục chứa Dockerfile của frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/usr/src/app
+       - /usr/src/app/node_modules # Giữ node_modules không bị ghi đè từ máy host
+    environment:
+      NODE_ENV: development
