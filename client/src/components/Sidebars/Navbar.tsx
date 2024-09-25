@@ -47,21 +47,20 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
 
       {/* Các liên kết và menu người dùng */}
       <nav className="flex items-center space-x-4">
-        <Link to="/home" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
+        <Link to="/home" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
           <FaHome size={24} />
         </Link>
-        <Link to="/notifications" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
+        <Link to="/notifications" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
           <FaBell size={24} />
         </Link>
-        <Link to="/messages" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
+        <Link to="/messages" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
           <FaEnvelope size={24} />
         </Link>
 
-        {/* Icon người dùng */}
         <div className="relative">
           <button
             onClick={toggleDropdown}
-            className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white"
+            className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white"
           >
             <FaUser size={24} />
           </button>
@@ -70,22 +69,22 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
               <ul className="py-1">
-                {/* Tùy chọn "Trang cá nhân" */}
+                {/* Profile */}
                 <li>
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="block px-4 py-2 text-blue-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => setDropdownOpen(false)}
                   >
                     Profile
                   </Link>
                 </li>
 
-                {/* Tùy chọn "Đăng xuất" */}
+                {/* logout*/}
                 <li>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="w-full text-left block px-4 py-2 text-blue-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     Logout
                   </button>
@@ -96,7 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
         </div>
 
         {/* Nút chuyển đổi chế độ sáng/tối */}
-        <button onClick={toggleDarkMode} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
+        <button onClick={toggleDarkMode} className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
           {darkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
         </button>
       </nav>

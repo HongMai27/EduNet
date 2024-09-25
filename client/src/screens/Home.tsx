@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { differenceInDays, differenceInHours, differenceInMinutes, format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { IPost } from "../types/IPost";
 import PostForm from "../components/Forms/CreatePostForm";
 import DropdownMenuButton from "../components/Forms/DropdownMenu";
 import PostActions from "../components/Forms/PostActions";
 import useLike from "../hooks/useLike";
+import useFormattedTimestamp from "../hooks/useFormatTimestamp";
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const currentUserId = localStorage.getItem('currentUserId') || '';
   const { handleLike } = useLike();
+  const { formatTimestamp } = useFormattedTimestamp();
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -56,25 +55,6 @@ const Home: React.FC = () => {
     await fetchPosts();
   };
 
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    const now = new Date();
-
-    const minutesAgo = differenceInMinutes(now, date);
-    const hoursAgo = differenceInHours(now, date);
-    const daysAgo = differenceInDays(now, date);
-
-    if (minutesAgo < 60) {
-      return minutesAgo === 0 ? "Just now" : `${minutesAgo} minutes ago`;
-    } else if (hoursAgo < 24) {
-      return `${hoursAgo} hours ago`;
-    } else if (daysAgo < 1) {
-      return "Today";
-    } else {
-      return format(date, "dd-MM 'at' HH:mm", { locale: vi });
-    }
-  };
-
   
 
   if (loading) return <p>Loading posts...</p>;
@@ -102,8 +82,11 @@ const Home: React.FC = () => {
                 className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
               >
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-4">
-                    <img src={post.user?.avatar} className="w-full h-full rounded-full object-cover" alt={post.user?.username} />
+                  <div 
+                    className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center mr-4"
+                    onClick={() => console.log(post)}
+                  >
+                  <img src={post.user?.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <h2 className="text-lg font-semibold">{post.user?.username}</h2>
