@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useId } from "react";
 import axios from "axios";
 import { IPost } from "../types/IPost";
 import PostForm from "../components/Forms/CreatePostForm";
@@ -6,6 +6,8 @@ import DropdownMenuButton from "../components/Forms/DropdownMenu";
 import PostActions from "../components/Forms/PostActions";
 import useLike from "../hooks/useLike";
 import useFormattedTimestamp from "../hooks/useFormatTimestamp";
+import { useAuth } from "../stores/AuthContext";
+import { useUser } from "../hooks/useUserInfor";
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -13,6 +15,9 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { handleLike } = useLike();
   const { formatTimestamp } = useFormattedTimestamp();
+  const { userId } = useAuth();
+  const { user } = useUser (userId); 
+
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -65,7 +70,9 @@ const Home: React.FC = () => {
       <div className="flex-1 flex flex-col pl-64 pr-64 p-5">
         <main className="flex-1 overflow-y-auto p-5">
           <header className="mb-8 mt-20">
-            <h1 className="text-3xl font-bold">Welcome to the EduNet</h1>
+          <h1 className="text-3xl font-bold">
+  Welcome <span className="text-blue-500 uppercase">{user?.username}</span> to the EduNet
+</h1>
             <p className="text-gray-600 dark:text-gray-400">
               See what your friends are up to today!
             </p>
