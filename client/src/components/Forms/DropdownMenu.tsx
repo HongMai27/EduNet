@@ -2,12 +2,14 @@ import React from 'react';
 import axios from 'axios';
 import { FaEllipsisV } from 'react-icons/fa';
 import { IPost } from '../../types/IPost';
+import { useAuth } from '../../stores/AuthContext';
 
 interface DropdownMenuButtonProps {
   post: IPost;
 }
 
 const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
+  const { userId } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
 
   const toggleDropdown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
@@ -78,12 +80,22 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
             >
               Delete
             </li>
-            <li
-               onClick={handleDelete}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              Report
-            </li>
+             {/*  userId = authorId then show Edit else Report */}
+             {userId === post.user?._id ? (
+              <li
+                onClick={handleDelete}
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Edit
+              </li>
+            ) : (
+              <li
+                onClick={handleDelete}
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Report
+              </li>
+            )}
             <li
                onClick={handleDelete}
               className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
