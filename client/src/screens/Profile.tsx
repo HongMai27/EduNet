@@ -8,6 +8,7 @@ import PostActions from '../components/Forms/PostActions';
 import useLike from '../hooks/useLike';
 import useFormattedTimestamp from '../hooks/useFormatTimestamp';
 import Loader from '../components/Forms/Loader';
+import useAddcmt from '../hooks/useAddcmt';
 
 
 const Profile: React.FC = () => {
@@ -17,6 +18,7 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { handleLike } = useLike();
+  const {handleAddComment} = useAddcmt();
   const {formatTimestamp} = useFormattedTimestamp();
 
   useEffect(() => {
@@ -40,6 +42,7 @@ const Profile: React.FC = () => {
     fetchUser();
   }, [userId]);
 
+ 
   
   if (loading) return <Loader/>
   if (error) return <p>{error}</p>;
@@ -101,6 +104,7 @@ const Profile: React.FC = () => {
                   postId={post._id}
                   likes={post.likes || []}
                   onLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts)}
+                  onAddComment={handleAddComment}
                 />
               </div>
               ))

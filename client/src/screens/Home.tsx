@@ -8,12 +8,14 @@ import useLike from "../hooks/useLike";
 import useFormattedTimestamp from "../hooks/useFormatTimestamp";
 import { useAuth } from "../stores/AuthContext";
 import { useUser } from "../hooks/useUserInfor";
+import useAddcmt from "../hooks/useAddcmt";
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { handleLike } = useLike();
+  const {handleAddComment} = useAddcmt();
   const { formatTimestamp } = useFormattedTimestamp();
   const { userId } = useAuth();
   const { user } = useUser (userId); 
@@ -121,6 +123,7 @@ const Home: React.FC = () => {
                   postId={post._id}
                   likes={post.likes || []}
                   onLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts)}
+                  onAddComment={handleAddComment}
                 />
               </div>
             ))}
