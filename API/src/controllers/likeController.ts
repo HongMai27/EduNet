@@ -6,6 +6,8 @@ import User from '../models/userModel';
 interface AuthRequest extends Request {
     userId?: any;
   }
+
+  // like post controller
   export const likePost = async (req: AuthRequest, res: Response) => {
     try {
       console.log('Request user:', req.userId); 
@@ -16,7 +18,7 @@ interface AuthRequest extends Request {
       }
   
       const post = await Post.findById(req.params.id);
-      console.log('Post found:', post); // Log the post object
+      console.log('Post found:', post); 
   
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
@@ -38,7 +40,7 @@ interface AuthRequest extends Request {
     }
   };
   
-  
+  // unlike post controller
   export const unlikePost = async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.userId;
@@ -48,7 +50,7 @@ interface AuthRequest extends Request {
       }
   
       const post = await Post.findById(req.params.id);
-      console.log('Post found:', post); // Log the post object
+      console.log('Post found:', post); 
   
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
@@ -70,17 +72,17 @@ interface AuthRequest extends Request {
     }
   };
   
-//get post likes
-export const getPostLikes = async (req: Request, res: Response) => {
-  try {
-    const post = await Post.findById(req.params.id).populate('likes', 'username'); 
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
+  //get post likes
+  export const getPostLikes = async (req: Request, res: Response) => {
+    try {
+      const post = await Post.findById(req.params.id).populate('likes', 'username'); 
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
 
-    return res.status(200).json({ likes: post.likes });
-  } catch (error) {
-    console.error('Error getting likes:', error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
+      return res.status(200).json({ likes: post.likes });
+    } catch (error) {
+      console.error('Error getting likes:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
 };

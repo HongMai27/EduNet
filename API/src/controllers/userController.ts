@@ -23,7 +23,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
     const user = await User.findById(userId)
       .populate('posts') 
-      .select('-password, -image'); 
+      .select('-password'); 
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

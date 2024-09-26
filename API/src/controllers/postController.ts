@@ -9,7 +9,7 @@ interface AuthRequest extends Request {
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const posts = await Post.find()
-      .populate("user", "username")
+      .populate("user", "username avatar")
       .sort({ date: -1 }); 
     res.json(posts);
   } catch (err) {
@@ -20,7 +20,7 @@ export const getPosts = async (req: Request, res: Response) => {
 //create post
 export const createPost = async (req: AuthRequest, res: Response) => {
   const { content, image, visibility, tag } = req.body;
-  const userId = req.userId; // Lấy ID người dùng từ yêu cầu
+  const userId = req.userId; 
 
   const date = new Date();
   const postVisibility = visibility || "public"; 
@@ -37,8 +37,8 @@ export const createPost = async (req: AuthRequest, res: Response) => {
     await post.save();
     await User.findByIdAndUpdate(
       userId,
-      { $push: { posts: post._id } }, // Thêm ID bài đăng vào danh sách bài đăng của người dùng
-      { new: true } // Trả về tài liệu mới sau khi cập nhật
+      { $push: { posts: post._id } }, 
+      { new: true } 
     );
 
     console.log('Posted');
@@ -53,6 +53,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
     }
   }
 };
+
 //delete post
 export const deletePost = async (req: AuthRequest, res: Response) => {
   const { id } = req.params; 
@@ -75,5 +76,38 @@ export const deletePost = async (req: AuthRequest, res: Response) => {
   } catch (err) {
     console.error("Error deleting post:", err); 
     res.status(500).json({ msg: "Server error" });
+  }
+};
+
+//edit post
+export const editPost = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params; 
+  const { content, image, visibility, tag } = req.body; 
+
+  try {
+    // find by id post & check auth
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ msg: "Post not found" });
+    }
+    if (post.user.toString() !== req.userId) {
+      return res.status(403).json({ msg: "Not authorized" });
+    }
+    post.content = content || post.content; 
+    post.image = image || post.image;       
+    post.visibility = visibility || post.visibility; 
+    post.tag = tag || post.tag;             
+
+    await post.save(); 
+    console.log('Post updated');
+    res.json(post); 
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("Error updating post:", err.message);
+      res.status(500).json({ msg: "Server error", error: err.message });
+    } else {
+      console.error("Unknown error:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
   }
 };

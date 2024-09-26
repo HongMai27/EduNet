@@ -9,6 +9,8 @@ export interface IPost extends Document {
   user: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[];
   comments: {
+    _id: any;
+    
     user: mongoose.Schema.Types.ObjectId;
     content: string;
     image?: string; 
