@@ -22,7 +22,19 @@ export const getUserProfile = async (req: Request, res: Response) => {
     const userId = req.params.id;
 
     const user = await User.findById(userId)
-      .populate('posts') 
+      .populate({
+        path: 'posts',
+        populate: [
+          { 
+            path: 'user',
+            select: 'avatar username', 
+          },
+          { 
+            path: 'tag', 
+            select: 'tagname', 
+          },
+        ],
+      })
       .select('-password'); 
 
     if (!user) {
