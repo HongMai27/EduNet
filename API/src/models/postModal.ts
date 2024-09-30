@@ -4,18 +4,12 @@ export interface IPost extends Document {
   content: string;
   image?: string; 
   date: string; 
-  tag: string;
-  visibility: "public" | "private"; 
+  visibility: "public" | "private" | "friends"; 
+  tag: mongoose.Schema.Types.ObjectId;
   user: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[];
-  comments: {
-    _id: any;
-    
-    user: mongoose.Schema.Types.ObjectId;
-    content: string;
-    image?: string; 
-    date?: string;  
-  }[];
+  comments: mongoose.Schema.Types.ObjectId[];
+ 
 }
 
 const postSchema: Schema<IPost> = new Schema({
@@ -29,7 +23,8 @@ const postSchema: Schema<IPost> = new Schema({
     required: true 
   },
   tag: { 
-    type: String, 
+    type: Schema.Types.ObjectId, 
+    ref: "Tag",
     required: true 
   },
   image: { 
@@ -48,14 +43,11 @@ const postSchema: Schema<IPost> = new Schema({
     type: Schema.Types.ObjectId, 
     ref: "User" 
   }],
-  comments: [
-    {
-      user: { type: Schema.Types.ObjectId, ref: "User" },
-      content: { type: String, required: true },
-      image: { type: String }, 
-      date: { type: String }, 
-    },
-  ],
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: "Comment"
+  }]
+  
 });
 
 const Post = mongoose.model<IPost>("Post", postSchema);

@@ -12,6 +12,7 @@ export interface IUser extends Document {
   avatar: string;
   point?: number;
   posts: mongoose.Schema.Types.ObjectId[]; 
+  comments: mongoose.Schema.Types.ObjectId[];
   comparePassword: (password: string) => Promise<boolean>;
 }
 
@@ -51,7 +52,15 @@ const userSchema: Schema<IUser> = new Schema({
     type: Number,
     default: 50, 
   },
-  posts: [{ type: Schema.Types.ObjectId, ref: "Post" }]
+  posts: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: "Post" 
+  }],
+  comments: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: "Comment",
+    required: true
+  }]
 });
 
 // Hash password 
