@@ -5,11 +5,18 @@ import connectDB from "./config/db";
 import authRoutes from "./routes/authRoute";
 import postRoutes from "./routes/postRoute";
 
+
 dotenv.config();
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 // Kết nối MongoDB
 connectDB();
+
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.url}`);
+  next();
+});
+
 
 // Middleware
 app.use(cors());
