@@ -26,9 +26,10 @@ const useAddcmt = () => {
             Authorization: `Bearer ${token}`,
           },
         }
-      );
+      ); 
 
       console.log('Comment added:', response.data);
+      window.location.reload();
       return response.data; // Return the new comment for further use if needed
     } catch (err) {
       console.error('Error adding comment:', err);

@@ -7,7 +7,9 @@ import Home from '../screens/Home';
 import Register from '../screens/Auth/Register';
 import Profile from '../screens/Profile';
 import Login from '../screens/Auth/Login';
-import ProtectedRoute from './ProtectedRoute'; 
+import ProtectedRoute from './ProtectedRoute';
+import PostDetail from '../screens/PostDetail';
+
 
 const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = ({ darkMode, toggleDarkMode }) => {
   const location = useLocation();
@@ -35,6 +37,14 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
               element={
                 <ProtectedRoute>
                   <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/detail/:postId"
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
                 </ProtectedRoute>
               }
             />

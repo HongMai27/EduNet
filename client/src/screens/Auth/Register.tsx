@@ -28,6 +28,7 @@ const Register: React.FC = () => {
       });
       
       console.log("Registration successful.");
+      alert('Registration successful! You can login now.')
       navigate('/login'); 
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {

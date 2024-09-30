@@ -1,30 +1,35 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react'; 
 import axios from 'axios';
+import { ITag } from '../../types/ITag';
+import { IPost } from '../../types/IPost';
+import { fetchTags } from '../../services/postService';
 
 interface PostFormProps {
-  onPostCreated: (post: Post) => void;
-}
-
-interface Post {
-  _id: string;
-  user: User;
-  content: string;
-  date: string;
-  image?: string;
-  tag?: string;
-}
-
-interface User {
-  _id: string;
-  username: string;
+  onPostCreated: (post: IPost) => void;
 }
 
 const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
-  const [newPostTag, setNewPostTag] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [availableTags, setAvailableTags] = useState<ITag[]>([]); 
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  //fetch all tag to create post
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const tags = await fetchTags(); 
+        console.log("Response Data:", tags); 
+        setAvailableTags(tags); 
+      } catch (err) {
+        console.error("Error fetching tags:", err);
+        setError("Failed to fetch tags");
+      }
+    };
+    loadTags(); 
+  }, []);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewPostContent(e.target.value);
@@ -36,8 +41,8 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
     }
   };
 
-  const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPostTag(e.target.value);
+  const handleTagToggle = (tagname: string) => {
+    setSelectedTag((prevSelectedTag) => (prevSelectedTag === tagname ? null : tagname));
   };
 
   const toBase64 = (file: File) => {
@@ -57,16 +62,15 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
       return;
     }
 
-    if (newPostTag.trim() === '') {
-      setError("Tag cannot be empty");
+    if (!selectedTag) {
+      setError("Please select a tag"); 
       return;
     }
 
     try {
       const newPost = {
         content: newPostContent,
-        tag: newPostTag,
-        // Convert the image to a base64 string if it's provided
+        tag: selectedTag, 
         image: newPostImage ? await toBase64(newPostImage) : undefined
       };
 
@@ -89,7 +93,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
 
       setNewPostContent('');
       setNewPostImage(null);
-      setNewPostTag('');
+      setSelectedTag(null);  
       setError(null);
 
       if (fileInputRef.current) {
@@ -133,13 +137,28 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
           onChange={handleImageChange}
           ref={fileInputRef}
         />
-        <input
-          type="text"
-          placeholder="Tag"
-          className="w-full p-2 mb-4 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-gray-900"
-          value={newPostTag}
-          onChange={handleTagChange}
-        />
+
+        {/* Display available tags as buttons */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          <h3 className="mb-2 w-full">Select a tag:</h3>
+          {availableTags && availableTags.length > 0 ? (
+            availableTags.map((tag) => (
+              <button
+                type="button"
+                key={tag._id}
+                onClick={() => handleTagToggle(tag.tagname)}
+                className={`px-4 py-2 rounded-lg ${
+                  selectedTag === tag.tagname ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                } hover:bg-blue-600`}
+              >
+                {tag.tagname}
+              </button>
+            ))
+          ) : (
+            <p>No tags available</p>  
+          )}
+        </div>
+
         <button
           type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -150,6 +169,6 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
       </form>
     </section>
   );
-}
+};
 
 export default PostForm;

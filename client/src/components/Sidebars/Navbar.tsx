@@ -17,9 +17,8 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('accessToken'); // Xóa token đăng nhập
-    // Thay đổi điều hướng nếu cần
-    window.location.href = '/login'; // Hoặc sử dụng navigate từ react-router-dom nếu có
+    localStorage.removeItem('accessToken'); 
+    window.location.href = '/login'; 
   };
 
   return (

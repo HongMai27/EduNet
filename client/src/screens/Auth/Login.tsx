@@ -145,7 +145,7 @@ return (
             {/* <!-- Social login buttons --> */}
             <Button
               type="button"
-              className="bg-gray-300 mb-6 flex items-center justify-center text-blue-600 hover:bg-slate-500"
+              className="bg-gray-300 mb-6 flex items-center justify-center text-blue-600 hover:bg-slate-400"
             >
               <img
                 src="https://webimages.mongodb.com/_com_assets/cms/kr6fvgdym4qzsgqo3-Google%20Icon.svg?auto=format%252Ccompress"

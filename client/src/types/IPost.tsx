@@ -1,4 +1,5 @@
 import { IComment } from "./IComment";
+import { ITag } from "./ITag";
 import { IUser } from "./IUser";
 
 export interface IPost {
@@ -7,7 +8,7 @@ export interface IPost {
     username: string;
     avatar: string;
     visibility?: string;
-    tag: string;
+    tag: ITag;
     image?: string;
     likes?: string[];
     date: string;
