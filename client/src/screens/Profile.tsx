@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useAuth } from '../stores/AuthContext';
 import { IUser } from '../types/IUser';
 import { IPost } from '../types/IPost';
-import DropdownMenuButton from '../components/Forms/DropdownMenu';
-import PostActions from '../components/Forms/PostActions';
 import useLike from '../hooks/useLike';
-import useFormattedTimestamp from '../hooks/useFormatTimestamp';
 import Loader from '../components/Forms/Loader';
 import useAddcmt from '../hooks/useAddcmt';
-
+import { fetchUserById } from '../services/userService';
+import NewsFeed from '../components/Forms/Newfeed';
 
 const Profile: React.FC = () => {
   const { userId } = useAuth();
@@ -18,8 +15,7 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { handleLike } = useLike();
-  const {handleAddComment} = useAddcmt();
-  const {formatTimestamp} = useFormattedTimestamp();
+  const { handleAddComment } = useAddcmt();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -30,8 +26,11 @@ const Profile: React.FC = () => {
       }
 
       try {
-        const response = await axios.get<IUser>(`http://localhost:5000/api/auth/user/${userId}`);
-        setUser(response.data);
+        const userData = await fetchUserById(userId);
+        setUser(userData);
+
+        const userPosts = await fetchUserById(userId); 
+        setPosts(userPosts.posts);
       } catch (err) {
         setError('Failed to fetch user data');
       } finally {
@@ -42,9 +41,7 @@ const Profile: React.FC = () => {
     fetchUser();
   }, [userId]);
 
- 
-  
-  if (loading) return <Loader/>
+  if (loading) return <Loader />;
   if (error) return <p>{error}</p>;
 
   return (
@@ -62,52 +59,17 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
-          {/* User's Posts */}
+          {/* User's Posts - Using NewsFeed component */}
           <section className="space-y-6">
             <h2 className="text-2xl font-bold mb-4">Posts</h2>
-            {user?.posts.length ? (
-            [...user.posts]
-              .sort((a: IPost, b: IPost) => new Date(b.date).getTime() - new Date(a.date).getTime()) 
-              .map((post: IPost) => (
-                <div
-                  key={post._id}
-                  className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
-                >
-                <div className="flex items-center mb-4">
-                  <div className="size-12 bg-gray-300 dark:bg-gray-600 rounded-full mr-4">
-                    <img src={user?.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold">{user?.username}</h2>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {formatTimestamp(post.date)}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <span className="inline-block px-2 py-1 text-sm text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900">
-                      {post.tag}
-                    </span>
-                    {/* dropdown menu */}
-                    <DropdownMenuButton post={post} />
-                  </div>
-                </div>
-                <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 text-justify">
-                  {post.content}
-                </p>
-                {post.image && (
-                  <div className="mb-4 flex justify-center">
-                    <img src={post.image} alt="Post" />
-                  </div>
-                )}
-                {/* PostActions component */}
-                <PostActions
-                  postId={post._id}
-                  likes={post.likes || []}
-                  onLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts)}
-                  onAddComment={handleAddComment}
-                />
-              </div>
-              ))
+            {posts.length ? (
+              <NewsFeed
+                posts={posts}
+                handleRedirect={(postId) => console.log(`Redirect to post ${postId}`)} // Handle redirection
+                handleLike={handleLike}
+                handleAddComment={handleAddComment}
+                setPosts={setPosts} // Pass setPosts for handling likes and comments
+              />
             ) : (
               <p>No posts available.</p>
             )}
