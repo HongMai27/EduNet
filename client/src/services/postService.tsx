@@ -73,3 +73,19 @@ export const fetchPostDetail = async (postId: string): Promise<IPost> => {
     });
     return response.data; 
   };
+
+  export const editPost = async (postId: string, data: any) => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        throw new Error("No access token found. Please log in.");
+    }
+
+    const response = await axios.put(`${API_URL}/${postId}`, data, {
+        headers: {
+            'Content-Type': 'application/json', 
+            Authorization: `Bearer ${token}` 
+        }
+    });
+
+    return response.data; 
+};
