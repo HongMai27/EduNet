@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Post from "../models/postModal";
 import User from "../models/userModel";
 import Tag from "../models/tagModal";
+import Comment from "../models/commentModal";
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -27,6 +28,7 @@ export const getPostById = async (req: Request, res: Response) => {
   try {
     const post = await Post.findById(id)
       .populate("user", "username avatar")
+      .populate("tag", "tagname")
       .populate({
         path: "comments", 
         populate: { 
@@ -120,6 +122,12 @@ export const deletePost = async (req: AuthRequest, res: Response) => {
     }
 
     await Post.deleteOne({ _id: id });
+    await Comment.deleteMany({ postID: id });
+    const user = await User.findById(req.userId);
+    if (user) {
+      user.posts = user.posts.filter(postId => postId.toString() !== id);
+      await user.save();  
+    }
     res.status(200).json({ msg: "Post deleted successfully" });
   } catch (err) {
     console.error("Error deleting post:", err); 

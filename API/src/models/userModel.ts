@@ -11,6 +11,11 @@ export interface IUser extends Document {
   address?: string;
   avatar: string;
   point?: number;
+  followers: mongoose.Schema.Types.ObjectId[];
+  followings: mongoose.Schema.Types.ObjectId[];
+  friend: mongoose.Schema.Types.ObjectId[];
+  isOnline?: boolean; 
+  lastActive?: string; 
   posts: mongoose.Schema.Types.ObjectId[]; 
   comments: mongoose.Schema.Types.ObjectId[];
   comparePassword: (password: string) => Promise<boolean>;
@@ -51,6 +56,26 @@ const userSchema: Schema<IUser> = new Schema({
   point: {
     type: Number,
     default: 50, 
+  },
+  followers: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: "User" 
+  }],
+  followings: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: "User" 
+  }],
+  friend: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: "User" 
+  }],
+  isOnline: { 
+    type: Boolean, 
+    default: false 
+  }, 
+  lastActive: { 
+    type: String, 
+    default: new Date().toISOString() 
   },
   posts: [{ 
     type: Schema.Types.ObjectId, 
