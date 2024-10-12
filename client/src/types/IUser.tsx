@@ -14,7 +14,10 @@ export interface IUser {
     accessToken: string;
     followers: Array<string>;
     following: Array<string>;
+    friends: Array<string>;
     posts: Array<IPost>;
+    isOnline: boolean;
+    lastActive: string;
   }
   export interface LoginProps {
     email: string;
