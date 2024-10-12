@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './stores/AuthContext';
 import AppContent from './routes/AppContent';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const App: React.FC = () => {
@@ -31,6 +33,7 @@ const App: React.FC = () => {
       <AuthProvider>
         <div className={`min-h-screen ${darkMode ? 'dark' : ''}`}>
           <AppContent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          <ToastContainer />
         </div>
       </AuthProvider>
     </Router>
