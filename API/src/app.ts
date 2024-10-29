@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db";
 import authRoutes from "./routes/authRoute";
 import postRoutes from "./routes/postRoute";
+import uploadRouter from './middlewares/upload';
 import http from 'http';
 import { Server } from 'socket.io';
 
@@ -14,19 +15,18 @@ const server = http.createServer(app); // create http server
 // create instance Socket.IO and connect to server  
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",  // Frontend URL
+    origin: "http://localhost:3000",  
     methods: ["GET", "POST"],
   },
 });
 io.on('connection', (socket) => {
   console.log('Người dùng đã kết nối: ', socket.id);
 
-  // Nhận tin nhắn từ client và phát đến tất cả các client khác
-  socket.on('send_message', (data) => {
-    io.emit('receive_message', data); // Phát sự kiện đến tất cả các client
+  //  getmess and send to other clients
+  socket.on('sendMessage', (data) => {
+    io.emit('newMessage', data); 
   });
 
-  // Khi người dùng ngắt kết nối
   socket.on('disconnect', () => {
     console.log('Người dùng đã ngắt kết nối: ', socket.id);
   });
@@ -42,8 +42,8 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  console.log(`Incoming ${req.method} request to ${req.url}`);
+app.use((req, res, next) => { 
+  console.log(`Incoming ${req.method} request to ${req.url} `);
   next();
 });
 
@@ -53,6 +53,11 @@ app.use("/api/posts", postRoutes);
 app.get("/", (req, res) => {
   res.send("Welcome to the EduNet API");
 });
+app.use('/api', uploadRouter);
+
+
+
+
 
 // when 1 user connect
 // io.on('connection', (socket) => { //listen event

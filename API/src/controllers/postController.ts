@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Post from "../models/postModal";
+import Post from "../models/postModel";
 import User from "../models/userModel";
-import Tag from "../models/tagModal";
-import Comment from "../models/commentModal";
+import Tag from "../models/tagModel";
+import Comment from "../models/commentModel";
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -47,9 +47,9 @@ export const getPostById = async (req: Request, res: Response) => {
   }
 };
 
-//create post
+// create post
 export const createPost = async (req: AuthRequest, res: Response) => {
-  const { content, image, visibility, tag } = req.body;
+  const { content, image, video, doc, visibility, tag } = req.body; 
   const userId = req.userId;
 
   const date = new Date();
@@ -67,12 +67,15 @@ export const createPost = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ msg: "Tag does not exist. Please select a valid tag." });
     }
 
+    // Tạo post mới
     const post = new Post({
       user: userId,
       content,
-      image,
+      image: image || null, 
+      video: video || null,   
+      doc: doc || null,      
       date,
-      tag: [existingTag._id],  
+      tag: existingTag._id,   
       visibility: postVisibility,
     });
 

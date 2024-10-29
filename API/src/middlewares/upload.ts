@@ -1,27 +1,62 @@
-import { Request } from 'express';
+import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import crypto from 'crypto';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
-// Set up multer storage with a function to generate short filenames
-const storage: multer.StorageEngine = multer.diskStorage({
-    destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
-        // Define the destination directory for uploaded files
-        cb(null, 'public/');
-    },
-    filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
-        // Generate a short, unique filename for the uploaded file
-        const extension = path.extname(file.originalname);
-        // Use a shorter unique identifier (e.g., hex representation of a random number)
-        const shortName = `img_${crypto.randomBytes(4).toString('hex')}${extension}`;
-        cb(null, shortName);
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+  
+});
+
+// Cloudinary Storage for image, video, and document
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    const fileType = file.mimetype.split('/')[0]; 
+    let folderName = 'uploadsImg'; 
+    let resourceType = 'auto';
+    let filename = file.originalname; 
+
+    if (fileType === 'video') {
+      folderName = 'uploadsVideos'; 
+      resourceType = 'video'; 
+    } else if (fileType === 'application') {
+      folderName = 'uploadsDocs'; 
+      resourceType = 'raw'; // type for file (doc, pdf)
     }
+
+    return {
+      folder: folderName, 
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi', 'doc', 'docx', 'pdf'], 
+      resource_type: resourceType,
+      public_id: filename 
+    };
+  },
 });
 
-// Configure multer with limits and storage
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB file size limit
+// middleware upload
+const upload = multer({ storage });
+
+//router upload
+const router = express.Router();
+
+// Định nghĩa route upload
+router.post('/upload', upload.single('file'), (req, res) => {
+  if (req.file) {
+    res.status(200).json({
+      message: 'Upload successful',
+      url: req.file.path 
+    });
+  } else {
+    res.status(400).json({
+      message: 'Upload failed',
+    });
+  }
 });
 
-export { upload };
+
+export default router;
