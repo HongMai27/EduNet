@@ -1,8 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react'; 
+import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { ITag } from '../../types/ITag';
 import { IPost } from '../../types/IPost';
 import { fetchTags } from '../../services/postService';
+import { FaFileAlt, FaFileImage } from 'react-icons/fa';
 
 interface PostFormProps {
   onPostCreated: (post: IPost) => void;
@@ -10,34 +11,45 @@ interface PostFormProps {
 
 const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
   const [newPostContent, setNewPostContent] = useState('');
-  const [newPostImage, setNewPostImage] = useState<File | null>(null);
+  const [newPostImageOrVideo, setNewPostImageOrVideo] = useState<File | null>(null); 
+  const [newPostFile, setNewPostFile] = useState<File | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [availableTags, setAvailableTags] = useState<ITag[]>([]); 
+  const [availableTags, setAvailableTags] = useState<ITag[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const imageVideoInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [imgPreview, setImgPreview] = useState<string | null>(null);
 
-  //fetch all tag to create post
+
+  // Fetch all tags to create post
   useEffect(() => {
     const loadTags = async () => {
       try {
-        const tags = await fetchTags(); 
-        console.log("Response Data:", tags); 
-        setAvailableTags(tags); 
+        const tags = await fetchTags();
+        setAvailableTags(tags);
       } catch (err) {
-        console.error("Error fetching tags:", err);
         setError("Failed to fetch tags");
       }
     };
-    loadTags(); 
+    loadTags();
   }, []);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewPostContent(e.target.value);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageOrVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setNewPostImage(e.target.files[0]);
+      setNewPostImageOrVideo(e.target.files[0]);
+      setImgPreview(URL.createObjectURL(e.target.files[0])); 
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setNewPostFile(e.target.files[0]);
+      setFilePreview(URL.createObjectURL(e.target.files[0])); 
     }
   };
 
@@ -45,13 +57,21 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
     setSelectedTag((prevSelectedTag) => (prevSelectedTag === tagname ? null : tagname));
   };
 
-  const toBase64 = (file: File) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
+  const uploadFile = async (file: File, fileType: 'imageOrVideo' | 'document') => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`http://localhost:5000/api/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.url; // Nhận URL từ phản hồi
+    } catch (error) {
+      setError(`Failed to upload ${fileType}`);
+      return null; // Trả về null nếu không thành công
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,15 +83,37 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
     }
 
     if (!selectedTag) {
-      setError("Please select a tag"); 
+      setError("Please select a tag");
       return;
     }
 
     try {
+      let imageUrl = null;
+      let videoUrl = null;
+
+      if (newPostImageOrVideo) {
+        // check type of file and upload
+        const fileType = newPostImageOrVideo.type.split('/')[0]; 
+        if (fileType === 'image') {
+          imageUrl = await uploadFile(newPostImageOrVideo, 'imageOrVideo');
+        } else if (fileType === 'video') {
+          videoUrl = await uploadFile(newPostImageOrVideo, 'imageOrVideo');
+        }
+
+        if (!imageUrl && !videoUrl) return; 
+      }
+      let docUrl = null;
+      if (newPostFile) {
+        docUrl = await uploadFile(newPostFile, 'document');
+        if (!docUrl) return; 
+      }
+
       const newPost = {
         content: newPostContent,
-        tag: selectedTag, 
-        image: newPostImage ? await toBase64(newPostImage) : undefined
+        tag: selectedTag,
+        image: imageUrl, 
+        video: videoUrl,  
+        doc: docUrl,      
       };
 
       const token = localStorage.getItem('accessToken');
@@ -82,19 +124,18 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
 
       const response = await axios.post(
         "http://localhost:5000/api/posts",
-        newPost, 
+        newPost,
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
-      setNewPostContent('');
-      setNewPostImage(null);
-      setSelectedTag(null);  
-      setError(null);
+      if (imageVideoInputRef.current) {
+        imageVideoInputRef.current.value = '';
+      }
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -103,24 +144,12 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
       onPostCreated(response.data);
 
     } catch (err) {
-      console.error('Error:', err);
-      if (axios.isAxiosError(err)) {
-        const errorMessage = err.response?.data?.msg || 'Unknown error';
-        if (err.response?.status === 401) {
-          setError("Unauthorized access. Please log in again.");
-        } else if (err.response?.status === 500) {
-          setError(`Server error: ${errorMessage}`);
-        } else {
-          setError(`Failed to create post: ${errorMessage}`);
-        }
-      } else {
-        setError(`Failed to create post: ${(err as Error).message}`);
-      }
+      setError("Failed to create post");
     }
   };
 
   return (
-    <section className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <section className="mb-8 p-1 bg-white dark:bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Create a new post</h2>
       <form onSubmit={handleSubmit}>
         <textarea
@@ -130,15 +159,62 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
           value={newPostContent}
           onChange={handleContentChange}
         ></textarea>
-        <input
-          type="file"
-          accept="image/*"
-          className="mb-4"
-          onChange={handleImageChange}
-          ref={fileInputRef}
-        />
+  
+        {/* Choose Image/Video and File inputs on the same row */}
+        <div className="flex items-center gap-4 mb-4">
+          {/* Image/Video Upload */}
+          <label className="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600">
+            <FaFileImage className=" text-blue-500" />
+            <span> Choose Image/Video</span>
+            <input
+              type="file"
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={handleImageOrVideoChange}
+              ref={imageVideoInputRef}
+            />
+          </label>
+  
+          {/* File Upload */}
+          <label className="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600">
+            <FaFileAlt className=" text-green-500" />
+            <span>Choose File</span>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+            />
+          </label>
+        </div>
+  
+        {/* Preview Section */}
+        {filePreview || imgPreview && (
+          <div className="mb-4">
+            {newPostImageOrVideo && newPostImageOrVideo.type.startsWith('image/') ? (
+              <img
+                src={imgPreview}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded-lg"
+              />
+            ) : newPostImageOrVideo && newPostImageOrVideo.type.startsWith('video/') ? (
+              <video
+                src={imgPreview}
+                controls
+                className="w-32 h-32 rounded-lg"
+              />
+            ) : (
+              // Display file icon and name for other file types
+              <div className="flex items-center gap-2">
+                <FaFileAlt className="text-gray-500" />
+                <span>{newPostFile?.name}</span>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Display available tags as buttons */}
+        {/* Tags list */}
         <div className="mb-4 flex flex-wrap gap-2">
           <h3 className="mb-2 w-full">Select a tag:</h3>
           {availableTags && availableTags.length > 0 ? (
@@ -148,23 +224,27 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
                 key={tag._id}
                 onClick={() => handleTagToggle(tag.tagname)}
                 className={`px-4 py-2 rounded-lg ${
-                  selectedTag === tag.tagname ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  selectedTag === tag.tagname
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700'
                 } hover:bg-blue-600`}
               >
                 {tag.tagname}
               </button>
             ))
           ) : (
-            <p>No tags available</p>  
+            <p>No tags available</p>
           )}
         </div>
-
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Post
-        </button>
+  
+        <div className="flex justify-center mt-4">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Post
+          </button>
+        </div>
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </form>
     </section>
