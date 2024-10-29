@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaHome, FaBell, FaEnvelope, FaUser, FaSearch, FaSun, FaMoon } from "react-icons/fa";
+import { FaHome, FaBell, FaEnvelope, FaSearch, FaSun, FaMoon, FaUserCheck, FaUserGraduate } from "react-icons/fa";
 
 interface NavbarProps {
   toggleDarkMode: () => void;
@@ -9,6 +9,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(3);
 
   // Toggle dropdown menu
   const toggleDropdown = () => {
@@ -23,19 +24,16 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-md p-4 flex items-center justify-between z-50">
-      {/* Logo */}
       <div className="text-2xl font-bold text-blue-600 dark:text-white">
         <Link to="/">EduNet</Link>
       </div>
 
-      {/* Tìm kiếm với icon */}
+      {/* search */}
       <div className="flex-1 mx-4">
         <div className="relative">
-          {/* Icon tìm kiếm */}
           <span className="absolute inset-y-0 left-0 flex items-center pl-3">
             <FaSearch className="text-gray-400 dark:text-gray-300" size={20} />
           </span>
-          {/* Trường tìm kiếm */}
           <input
             type="text"
             placeholder="Search..."
@@ -44,29 +42,56 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
         </div>
       </div>
 
-      {/* Các liên kết và menu người dùng */}
+      {/* other page */}
       <nav className="flex items-center space-x-4">
-        <Link to="/home" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
-          <FaHome size={24} />
-        </Link>
-        <Link to="/notifications" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
-          <FaBell size={24} />
-        </Link>
-        <Link to="/messages" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
-          <FaEnvelope size={24} />
-        </Link>
+        {/* Home */}
+        <div className="group relative flex items-center">
+          <Link to="/home" className="text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out">
+            <FaHome size={28} />
+          </Link>
+          <span className="tooltip-text group-hover:opacity-100">Home</span>
+        </div>
 
-        <div className="relative">
+        {/* Friends */}
+        <div className="group relative flex items-center">
+          <Link to="/home" className="text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out">
+            <FaUserCheck size={28} />
+          </Link>
+          <span className="tooltip-text group-hover:opacity-100">Friends</span>
+        </div>
+        {/* Notifications */}
+        <div className="group relative flex items-center">
+          <Link to="/notifications" className="text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out">
+            <FaBell size={28} />
+          </Link>
+          <span className="tooltip-text group-hover:opacity-100">Notifications</span>
+        </div>
+
+         {/* Messages with Badge */}
+         <div className="relative">
+          <Link to="/messages" className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
+            <FaEnvelope size={24} />
+          </Link>
+          {unreadMessages > 0 && (
+            <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-600 text-white text-xs font-semibold rounded-full px-1.5">
+              {unreadMessages}
+            </span>
+          )}
+        </div>
+
+        {/* User Dropdown */}
+        <div className="group relative flex items-center">
           <button
             onClick={toggleDropdown}
-            className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white"
+            className="text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out"
           >
-            <FaUser size={24} />
+            <FaUserGraduate size={28} />
           </button>
+          <span className="tooltip-text group-hover:opacity-100">User</span>
 
           {/* Dropdown menu */}
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+            <div className="absolute right-0 mt-36 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
               <ul className="py-1">
                 {/* Profile */}
                 <li>
@@ -79,7 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
                   </Link>
                 </li>
 
-                {/* logout*/}
+                {/* logout */}
                 <li>
                   <button
                     onClick={handleLogout}
@@ -93,10 +118,16 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
           )}
         </div>
 
-        {/* Nút chuyển đổi chế độ sáng/tối */}
-        <button onClick={toggleDarkMode} className="text-blue-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
-          {darkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
-        </button>
+        {/* Dark Mode Toggle */}
+        <div className="group relative flex items-center">
+          <button onClick={toggleDarkMode} className="text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out">
+            {darkMode ? <FaSun size={28} /> : <FaMoon size={28} />}
+          </button>
+          <span className="tooltip-text group-hover:opacity-100">
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </span>
+        </div>
+
       </nav>
     </header>
   );

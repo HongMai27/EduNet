@@ -15,3 +15,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 100%; /* Tooltip in top */
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  background-color: black;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  transition: opacity 0.2s ease-in-out;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 0.875rem; /* Giảm kích thước chữ của tooltip */
+  margin-bottom: 5px;
+}
+
+/* tooltip hover */
+.group:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
