@@ -10,11 +10,13 @@ export interface IPost {
     visibility?: string;
     tag: ITag;
     image?: string;
+    doc?: string;
+    video?: string;
     likes?: string[];
     date: string;
     comments?: Array<IComment>;
     post?: any;
-    user?: IUser;
+    user: IUser;
     isVerified?: boolean;
   }
   

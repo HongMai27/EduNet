@@ -8,6 +8,22 @@ export const fetchUserById = async (userId: string): Promise<IUser> => {
   const response = await axios.get<IUser>(`${API_URL}/user/${userId}`);
   return response.data;
 };
+
+//edit profile
+export const editProfile = async (userId: string | null, profileData: any) => {
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    throw new Error('No access token found');
+  }
+
+  const response = await axios.put(`${API_URL}/user/${userId}`, profileData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data; // Return the updated user data
+};
  
 //fetch friend
 export const fetchFriends = async () => {

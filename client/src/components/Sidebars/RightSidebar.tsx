@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import { addFriend, fetchFollow, fetchFriends, fetchSuggest, unfriend } from '../../services/userService';
 import { IUser } from '../../types/IUser';
 import useFormattedTimestamp from '../../hooks/useFormatTimestamp';
 import axios from 'axios';
+import FollowButton from '../Forms/FollowButton';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate từ react-router-dom
 
 const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
   const [friends, setFriends] = useState<IUser[]>([]);
-  const [suggestions, setSuggestions] = useState<IUser[]>([]); 
+  const [suggestions, setSuggestions] = useState<IUser[]>([]);
   const [followings, setFollowings] = useState<IUser[]>([]);
   const [followers, setFollowers] = useState<IUser[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
+  const navigate = useNavigate(); // Khởi tạo useNavigate
 
-  // Fetch list fr
+  //load friends
   useEffect(() => {
     const loadFriends = async () => {
       try {
@@ -26,7 +29,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     loadFriends();
   }, []);
 
-  // Fetch suggest
+  //load suggested
   useEffect(() => {
     const loadSuggestions = async () => {
       try {
@@ -37,92 +40,51 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
         setError('Error fetching suggestions');
       }
     };
-    loadSuggestions(); // Fetch initial suggestions
-    // const intervalId = setInterval(loadSuggestions, 10000); 
-    // return () => clearInterval(intervalId); // Cleanup
+    loadSuggestions();
   }, []);
-  
 
-  // fetch follow
+  //load follow
   useEffect(() => {
     const loadFollows = async () => {
       try {
         const response = await fetchFollow();
-        // Get arr followings from response
         setFollowings(Array.isArray(response.followings) ? response.followings : []);
       } catch (error) {
         console.error('Error fetching followings:', error);
         setError('Error fetching followings');
       }
     };
-
-    loadFollows(); // Fetch initial followings
-    // const intervalId = setInterval(loadFollows, 100000); 
-    // return () => clearInterval(intervalId);
+    loadFollows();
   }, []);
-  
-  //check isfollowing
+
+  //check following, follower
   const isFollowing = (userId: string) => {
     return followings.some(following => following._id === userId);
   };
-  
+
   const isFollower = (userId: string) => {
     return followers.some(follower => follower._id === userId);
   };
 
-  // handleAddFriend để follow user
+  // handle add friend
   const handleAddFriend = async (targetUserId: string) => {
     try {
       const response = await addFriend(targetUserId);
       alert(response.message);
-  
-      // Update suggestions locally
-      setSuggestions(prevSuggestions =>
-        prevSuggestions.map(user => {
-          if (user._id === targetUserId) {
-            const updatedFollowing = Array.isArray(user.following)
-              ? [...user.following, user._id] // Append user._id if following exists
-              : [user._id]; // Initialize following with user._id if not an array
-  
-            return { ...user, following: updatedFollowing };
-          }
-          return user;
-        })
-      );
-      window.location.reload(); 
-      // Immediately fetch updated suggestions
-      // const updatedSuggestions = await fetchSuggest(); // Fetch new suggestions
-      // setSuggestions(updatedSuggestions); // Update suggestions state
-  
+      window.location.reload();
     } catch (error) {
       console.error("Error following user:", error);
       alert("Error adding friend. Please try again.");
     }
   };
-  
-  
-  
-  //handle unfollow
+
+  //handle unfriend
   const handleUnfollow = async (targetUserId: string) => {
     try {
       const response = await unfriend(targetUserId);
-      alert(response.message); 
-  
-      setSuggestions(prevSuggestions =>
-        prevSuggestions.map(user => {
-          if (user._id === targetUserId) {
-            const updatedFollowing = Array.isArray(user.following)
-              ? user.following.filter(id => id !== targetUserId) // Remove targetUserId from following
-              : []; // If following is not an array, initialize as empty
-  
-            return { ...user, following: updatedFollowing };
-          }
-          return user;
-        })
-      );
-      window.location.reload(); 
+      alert(response.message);
+      window.location.reload();
     } catch (error) {
-      // Enhanced error logging
       if (axios.isAxiosError(error)) {
         console.error("Error unfollowing user:", error.response?.data || error.message);
         alert(`Error: ${error.response?.data?.message || "Unauthorized. Please check your credentials."}`);
@@ -132,16 +94,20 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
       }
     }
   };
-  
+
+  // Handle message button click
+  const handleMessageClick = (receiverId: string) => {
+    navigate(`/messages/${receiverId}`); 
+  };
 
   return (
-    <div className={`fixed right-0 w-64 h-screen bg-white dark:bg-gray-800 p-4 mt-20 shadow-md ${className}`}>
+    <div className={`fixed right-0 w-72 h-screen bg-white dark:bg-gray-800 p-4 mt-20 shadow-md ${className}`}>
       {/* Friends */}
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-4 dark:text-white">Friends</h2>
         {error && <p className="text-red-500">{error}</p>}
         {friends.length === 0 ? (
-          <p className="text-gray-500">You have no friends! Let make friends with suggested</p> // Message when there are no friends
+          <p className="text-gray-500">You have no friends! Let make friends with suggested</p>
         ) : (
           <ul className="space-y-4">
             {friends.map(friend => (
@@ -170,46 +136,28 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
 
               <div className="flex flex-col w-full">
                 <span className="text-black dark:text-white">{suggestedFriend.username}</span>
-                <div className="flex space-x-2 mt-1">
-                  {/* Check if the user is a follower first */}
-                  {isFollower(suggestedFriend._id) ? ( // Check if the user is a follower of the suggested friend
-                    <button
-                      className="bg-blue-500 text-white text-sm py-1 px-2 rounded hover:bg-blue-600"
-                      onClick={() => handleAddFriend(suggestedFriend._id)} 
-                    >
-                      Accept
-                    </button>
-                  ) : (
-                    isFollowing(suggestedFriend._id) ? (
-                      <span 
-                        className="bg-green-500 text-white text-sm py-1 px-2 rounded cursor-pointer"
-                        onClick={() => handleUnfollow(suggestedFriend._id)} 
-                      >
-                        Following 
-                      </span>
-                    ) : (
-                      <button
-                        className="bg-blue-500 text-white text-sm py-1 px-2 rounded hover:bg-blue-600"
-                        onClick={() => handleAddFriend(suggestedFriend._id)} 
-                      >
-                        Add Friend
-                      </button>
-                    )
-                  )}
-
+                <div className="flex space-x-2 mt-1 w-full"> 
+                  {/* Follow Button */}
+                  <FollowButton
+                    isFollower={isFollower(suggestedFriend._id)}
+                    isFollowing={isFollowing(suggestedFriend._id)}
+                    onAddFriend={() => handleAddFriend(suggestedFriend._id)}
+                    onUnfollow={() => handleUnfollow(suggestedFriend._id)}
+                  />
                   {/* Message Button */}
-                  <button className="bg-gray-500 text-white text-sm py-1 px-2 rounded hover:bg-gray-600">
+                  <button 
+                    className="bg-gray-500 text-white text-sm py-1 px-2 rounded w-1/2 hover:bg-gray-600"
+                    onClick={() => handleMessageClick(suggestedFriend._id)} // Gọi hàm khi nhấn nút
+                  >
                     Message
                   </button>
                 </div>
               </div>
+
             </li>
           ))}
         </ul>
       </div>
-
-
-
     </div>
   );
 };

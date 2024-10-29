@@ -5,10 +5,11 @@ export interface IUser {
     username: string;
     email: string;
     avatar: string;
+    imgcover: string;
     password: string;
     phone?: string;
     sex?: "male" | "female" | "other"; 
-    birthday?: String;
+    birthday?: string;
     address?: string;
     point?: number;
     accessToken: string;
