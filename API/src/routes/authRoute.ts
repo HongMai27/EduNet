@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { register, login, googleLogin } from "../controllers/authController";
-import { followUser, getAllUser,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, suggestFriend, unfollowUser, updateStatus } from "../controllers/userController";
+import { editProfile, followUser, getAllUser,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, suggestFriend, unfollowUser, updateStatus } from "../controllers/userController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { getMess, sendMess } from "../controllers/messageController";
 
@@ -10,6 +10,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get('/', getAllUser)
 router.get('/user/:id', getUserProfile);
+router.put('/user/:id', authMiddleware, editProfile)
 // router.get('/profiles/:username', getUserByUsername);
 router.post('/google-login', googleLogin);
 router.put('/follow/:id', authMiddleware, followUser);

@@ -10,6 +10,7 @@ export interface IUser extends Document {
   birthday?: string;
   address?: string;
   avatar: string;
+  imgcover:string;
   point?: number;
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
@@ -39,6 +40,10 @@ const userSchema: Schema<IUser> = new Schema({
   avatar: {
     type: String,
     default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdGr3fTJlsjdAEiSCDznslzUJXqeI22hIB20aDOvQsf9Hz93yoOiLaxnlPEA&s',
+  },
+  imgcover: {
+    type: String,
+    default: 'https://chiemtaimobile.vn/images/companies/1/%E1%BA%A2nh%20Blog/anh-bia-facebook-dep/anh-bia-facebook-anime-mat-trang.jpg?1705887967948',
   },
   phone: {
     type: String,
