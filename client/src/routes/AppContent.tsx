@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, Routes, Route } from 'react-router-dom';
+import { useLocation, Routes, Route, useMatch, useParams } from 'react-router-dom';
 import Navbar from '../components/Sidebars/Navbar';
 import LeftSidebar from '../components/Sidebars/LeftSidebar';
 import RightSidebar from '../components/Sidebars/RightSidebar';
@@ -10,20 +10,43 @@ import Login from '../screens/Auth/Login';
 import ProtectedRoute from './ProtectedRoute';
 import PostDetail from '../screens/PostDetail';
 import EditPostModal from '../components/Forms/EditPost';
+import OtherProfile from '../screens/OtherProfile';
+import Chat from '../components/Forms/Chat';
+import ChatPage from '../screens/Chat';
+
+// Wrapper component để lấy receiverId từ URL
+const ChatWrapper: React.FC = () => {
+  const { receiverId } = useParams<{ receiverId: string }>();
+  
+  // Kiểm tra nếu receiverId không tồn tại
+  if (!receiverId) {
+    return <div>Không có người nhận.</div>; // Hiển thị thông báo hoặc điều hướng đến trang khác
+  }
+
+  return <Chat receiverId={receiverId} />;
+};
 
 
 const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = ({ darkMode, toggleDarkMode }) => {
   const location = useLocation();
-  const hideSidebars = ['/login', '/register', '/profile'];
+
+  //usematch for dynamic path
+  const isProfile = useMatch('/profile');
+  const isChat = useMatch('/messages');
+  const isProfileDetail = useMatch('/profiles/:userId');
+
+  const hideSidebars =
+    ['/login', '/register'].includes(location.pathname) || isProfile || isProfileDetail || isChat;
+
   const showNavbar = !['/login', '/register'].includes(location.pathname);
 
   return (
     <>
       {showNavbar && <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />}
       <div className="flex">
-      {!hideSidebars.includes(location.pathname) && <LeftSidebar />}
-      {!hideSidebars.includes(location.pathname) && <RightSidebar />}
-      
+        {!hideSidebars && <LeftSidebar />}
+        {!hideSidebars && <RightSidebar />}
+
         <main className="flex-1 p-0">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -60,7 +83,15 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
                 </ProtectedRoute>
               }
             />
-              <Route
+            <Route
+              path="/profiles/:userId"
+              element={
+                <ProtectedRoute>
+                  <OtherProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/editpost"
               element={
                 <ProtectedRoute>
@@ -68,9 +99,25 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/messages/:receiverId" // Sửa thành /messages/:receiverId
+              element={
+                <ProtectedRoute>
+                  <ChatWrapper />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/messages" // Sửa thành /messages/:receiverId
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
-        {showNavbar }
+        {showNavbar}
       </div>
     </>
   );
