@@ -5,6 +5,22 @@ import mongoose from 'mongoose';
 interface AuthRequest extends Request {
   userId?: any;
 }
+// get user in4 by username
+// export const getUserByUsername = async (req: Request, res: Response) => {
+//   const { username } = req.params;
+
+//   try {
+//     const user = await User.findOne({ username });
+//     if (!user) {
+//       return res.status(404).json({ msg: 'User not found' });
+//     }
+//     res.status(200).json(user);
+//   } catch (err) {
+//     console.error("Error fetching user by username:", err);
+//     res.status(500).json({ msg: 'Server error' });
+//   }
+// };
+
 // get all user
 export const getAllUser = async (req: Request, res: Response) => {
   try {
@@ -42,6 +58,40 @@ export const getUserFollowersAndFollowings = async (req: AuthRequest, res: Respo
   } catch (error) {
     console.error('Error fetching followers and followings:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+//edit profile
+export const editProfile = async (req: AuthRequest, res: Response) => {
+  const { username,  phone, sex, birthday, address, avatar, imgcover } = req.body;
+
+  try {
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    // update
+    user.username = username || user.username;
+    user.phone = phone || user.phone;
+    user.sex = sex || user.sex;
+    user.birthday = birthday || user.birthday;
+    user.address = address || user.address;
+    user.avatar = avatar || user.avatar;
+    user.imgcover = imgcover || user.imgcover;
+
+    await user.save();
+    console.log('User profile updated');
+    res.json(user); 
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("Error updating user profile:", err.message);
+      res.status(500).json({ msg: "Server error", error: err.message });
+    } else {
+      console.error("Unknown error:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
   }
 };
 
