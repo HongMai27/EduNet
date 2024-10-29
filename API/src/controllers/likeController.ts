@@ -1,7 +1,6 @@
 // controllers/likeController.ts
 import { Request, Response } from 'express';
-import Post from '../models/postModal';
-import User from '../models/userModel';
+import Post from '../models/postModel';
 
 interface AuthRequest extends Request {
     userId?: any;
@@ -75,7 +74,7 @@ interface AuthRequest extends Request {
   //get post likes
   export const getPostLikes = async (req: Request, res: Response) => {
     try {
-      const post = await Post.findById(req.params.id).populate('likes', 'username'); 
+      const post = await Post.findById(req.params.id).populate('likes', 'username avatar'); 
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
       }
