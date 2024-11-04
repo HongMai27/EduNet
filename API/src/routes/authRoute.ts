@@ -8,10 +8,10 @@ const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post('/google-login', googleLogin);
 router.get('/', getAllUser)
 router.get('/user/:id', getUserProfile);
 router.put('/user/:id', authMiddleware, editProfile)
-// router.get('/profiles/:username', getUserByUsername);
 router.post('/google-login', googleLogin);
 router.put('/follow/:id', authMiddleware, followUser);
 router.put('/unfollow/:id', authMiddleware, unfollowUser);

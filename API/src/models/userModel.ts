@@ -5,6 +5,7 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  googleId?: string;
   phone?: string;
   sex?: "male" | "female" | "other"; 
   birthday?: string;
@@ -35,7 +36,12 @@ const userSchema: Schema<IUser> = new Schema({
   },
   password: {
     type: String,
-    required: true
+    required: false
+  },
+  googleId: { 
+    type: String, 
+    unique: true, 
+    sparse: true 
   },
   avatar: {
     type: String,
