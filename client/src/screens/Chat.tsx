@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { IUser } from '../types/IUser';
 import { fetchFriends, fetchUserById } from '../services/userService';
-import Chat from '../components/Forms/Chat';
+import Chat from '../components/Forms/ChatBox';
 
 const ChatPage: React.FC = () => {
   const [friends, setFriends] = useState<IUser[]>([]);
