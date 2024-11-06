@@ -11,16 +11,19 @@ import ProtectedRoute from './ProtectedRoute';
 import PostDetail from '../screens/PostDetail';
 import EditPostModal from '../components/Forms/EditPost';
 import OtherProfile from '../screens/OtherProfile';
-import Chat from '../components/Forms/Chat';
+import Chat from '../components/Forms/ChatBox';
 import ChatPage from '../screens/Chat';
+import ForgotPassword from '../screens/Auth/ForgetPassword';
+import FriendPage from '../screens/Friends';
+import SettingsPage from '../screens/Setting';
 
 // Wrapper component để lấy receiverId từ URL
-const ChatWrapper: React.FC = () => {
+const ChatMini: React.FC = () => {
   const { receiverId } = useParams<{ receiverId: string }>();
   
   // Kiểm tra nếu receiverId không tồn tại
   if (!receiverId) {
-    return <div>Không có người nhận.</div>; // Hiển thị thông báo hoặc điều hướng đến trang khác
+    return <div>Không có người nhận.</div>; 
   }
 
   return <Chat receiverId={receiverId} />;
@@ -32,13 +35,15 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
 
   //usematch for dynamic path
   const isProfile = useMatch('/profile');
+  const isFriends = useMatch('/friends');
+  const isSetting = useMatch('/setting');
   const isChat = useMatch('/messages');
   const isProfileDetail = useMatch('/profiles/:userId');
 
   const hideSidebars =
-    ['/login', '/register'].includes(location.pathname) || isProfile || isProfileDetail || isChat;
+    ['/login', '/register', '/forgot-password'].includes(location.pathname) || isProfile || isProfileDetail || isChat || isFriends || isSetting ;
 
-  const showNavbar = !['/login', '/register'].includes(location.pathname);
+  const showNavbar = !['/login', '/register', '/forgot-password'].includes(location.pathname);
 
   return (
     <>
@@ -50,6 +55,7 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
         <main className="flex-1 p-0">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/register" element={<Register />} />
             <Route
               path="/"
@@ -64,6 +70,22 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
               element={
                 <ProtectedRoute>
                   <Home />
+                </ProtectedRoute>
+              }
+            />
+               <Route
+              path="/friends"
+              element={
+                <ProtectedRoute>
+                  <FriendPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/setting"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />
@@ -100,15 +122,15 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
               }
             />
             <Route
-              path="/messages/:receiverId" // Sửa thành /messages/:receiverId
+              path="/messages/:receiverId" 
               element={
                 <ProtectedRoute>
-                  <ChatWrapper />
+                  <ChatMini />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/messages" // Sửa thành /messages/:receiverId
+              path="/messages" 
               element={
                 <ProtectedRoute>
                   <ChatPage />
