@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import nodemailer from 'nodemailer';
 import User from "../models/userModel";
 import bcrypt from "bcrypt";
+import crypto from 'crypto';
 import { OAuth2Client } from "google-auth-library";
 
 //register
@@ -78,7 +80,6 @@ export const login = async (req: Request, res: Response) => {
 
 // gg login
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 export const googleLogin = async (req: Request, res: Response) => {
   const { token } = req.body;
 
@@ -124,61 +125,62 @@ export const googleLogin = async (req: Request, res: Response) => {
 };
 
 // forget password
-// export const forgetPassword = async (req: Request, res: Response) => {
-//   const { email } = req.body;
+const transporter = nodemailer.createTransport({
+  service: 'gmail', 
+  auth: {
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS, 
+  },
+});
 
-//   console.log('Received email for password reset:', email);
 
-//   if (!email) {
-//     return res.status(400).json({ msg: "Please provide an email address" });
-//   }
+export const forgotPassword = async (request: Request, response: Response) => {
+  try {
+      const { email } = request.body;
 
-//   try {
-//     const user = await User.findOne({ email });
+      const existingUser = await User.findOne({ email });
 
-//     if (!user) {
-//       return res.status(400).json({ msg: "No user found with this email" });
-//     }
+      if (!existingUser) {
+          return response.status(404).send({ message: "User not found" });
+      }
 
-//     const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || "secret", {
-//       expiresIn: '1h',
-//     });
+      const randomPassword = Math.random().toString(36).slice(-8); 
 
-//     user.resetPasswordToken = resetToken;
-//     user.resetPasswordExpires = Date.now() + 3600000; 
-//     await user.save();
+      const hashedPassword = await bcrypt.hash(randomPassword, 12);
 
-//     const transporter = nodemailer.createTransport({
-//       service: 'Gmail', 
-//       auth: {
-//         user: process.env.EMAIL_USER, 
-//         pass: process.env.EMAIL_PASSWORD, 
-//       },
-//     });
+      await User.updateOne({ _id: existingUser._id }, { password: hashedPassword });
 
-//     const resetUrl = `http://yourfrontend.com/resetpassword/${resetToken}`;
-//     const mailOptions = {
-//       to: user.email,
-//       from: process.env.EMAIL_USER,
-//       subject: 'Password Reset',
-//       text: `You are receiving this because you (or someone else) requested to reset your password.\n\n
-//       Please click the following link to reset your password:\n\n
-//       ${resetUrl}\n\n
-//       If you did not request this, please ignore this email.\n`,
-//     };
+      const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465, // sử dụng cổng SSL cho Gmail
+        secure: true, // sử dụng SSL
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS 
+        },
+    });
 
-//     // Send the email
-//     await transporter.sendMail(mailOptions);
+      const mailOptions = {
+          from: process.env.EMAIL_USER, 
+          to: email,
+          subject: "Đặt lại mật khẩu",
+          text: `Mật khẩu mới của bạn là: ${randomPassword}\n\n Vui lòng đăng nhập và đổi mật khẩu ngay sau khi đăng nhập`,
+      };
+
+      // Gửi email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error("Error sending email:", error); // In ra chi tiết lỗi
+            return response.status(500).send({ message: "Error sending email", error: error.message });
+        }
+        console.log("Email sent:", info.response);
+        return response.status(200).send({ message: "New password sent to your email" });
+    });
     
-//     console.log(`Password reset email sent to ${user.email}`);
-    
-//     return res.status(200).json({ msg: 'Password reset link sent to your email' });
 
-//   } catch (err) {
-//     console.error('Server error:', err);
-//     return res.status(500).json({ msg: 'Server error' });
-//   }
-// };
-
-
+  } catch (error) {
+      console.error("Error in forgot password:", error);
+      response.status(500).send({ message: "Error in forgot password" });
+  }
+};
 
