@@ -3,6 +3,8 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IPost extends Document {
   content: string;
   image?: string; 
+  doc?: string;
+  video?: string;
   date: string; 
   visibility: "public" | "private" | "friends"; 
   tag: mongoose.Schema.Types.ObjectId;
@@ -28,6 +30,12 @@ const postSchema: Schema<IPost> = new Schema({
     required: true 
   },
   image: { 
+    type: String 
+  }, 
+  doc: { 
+    type: String 
+  }, 
+  video: { 
     type: String 
   }, 
   date: { 
