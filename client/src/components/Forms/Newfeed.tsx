@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IPost } from '../../types/IPost';
 import useFormattedTimestamp from '../../hooks/useFormatTimestamp';
 import DropdownMenuButton from './DropdownMenu';
 import PostActions from './PostActions';
+import { Socket } from 'socket.io-client';
+import FullscreenModal from '../Modals/FullscreenModal';
 
 interface NewsFeedProps {
   posts: IPost[];
   handleRedirect: (postId: string) => void;
   handleRedirectToProfile: (userId: string) => void;
-  handleLike: (postId: string, isLiked: boolean, setPosts: React.Dispatch<React.SetStateAction<IPost[]>>) => void;
+  handleLike: (postId: string, isLiked: boolean, setPosts: React.Dispatch<React.SetStateAction<IPost[]>>, userId: string) => void;
   handleAddComment: (postId: string, content: string) => Promise<void>;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
+  userId: string;
+  socket: Socket | null;
+  userAvatar?: any;
+
 }
 
 const NewsFeed: React.FC<NewsFeedProps> = ({
@@ -19,9 +25,26 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   handleRedirectToProfile,
   handleLike,
   handleAddComment,
-  setPosts
+  setPosts,
+  userId,
+  socket,
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
+
+  const openFullscreen = (type: 'image' | 'video', url: string) => {
+    setMediaType(type);
+    setMediaUrl(url);
+    setIsModalOpen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsModalOpen(false);
+    setMediaUrl(null);
+    setMediaType(null);
+  };
 
   return (
     <section className="space-y-6">
@@ -38,7 +61,6 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
               <img src={post.user?.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
             </div>
 
-            {/* Tên người dùng với sự kiện onClick */}
             <div className="cursor-pointer" onClick={() => handleRedirectToProfile(post.user._id)}>
               <h3 className="text-lg font-semibold dark:text-white">{post.user?.username}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">{formatTimestamp(post.date)}</p>
@@ -52,52 +74,63 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
             </div>
           </div>
 
-          {/* Nội dung bài đăng */}
-          <p
-            className="text-lg text-gray-700 dark:text-gray-300 mb-6 text-justify"
-            onClick={() => handleRedirect(post._id)}
-          >
+          <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 text-justify" onClick={() => handleRedirect(post._id)}>
             {post.content}
           </p>
 
-          {/* Hiển thị hình ảnh */}
           {post.image && (
             <div className="mb-4 flex justify-center">
-              <img src={post.image} alt="Post" />
+              <img
+                src={post.image}
+                alt="Post"
+                className="rounded-lg w-full h-auto max-w-5xl object-cover"
+                onClick={() => openFullscreen('image', post.image!)} 
+              />
             </div>
           )}
 
-          {/* Hiển thị video nếu có */}
           {post.video && (
             <div className="mb-4 flex justify-center">
-              <video controls className="w-full h-auto max-w-lg">
+              <video
+                controls
+                className="rounded-lg w-full h-auto max-w-5xl object-cover"
+                onClick={() => openFullscreen('video', post.video!)}
+              >
                 <source src={post.video} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             </div>
           )}
 
-          {/* Hiển thị file tài liệu nếu có */}
           {post.doc && (post.doc.endsWith(".pdf") || post.doc.endsWith(".doc") || post.doc.endsWith(".docx")) && (
             <div className="mb-4 flex justify-center">
-              <a
-                href={post.doc}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
+              <a href={post.doc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                 View Document
               </a>
             </div>
           )}
 
-          {/* PostActions component */}
           <PostActions
             postId={post._id}
             likes={post.likes || []}
-            onLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts)}
+            onLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts, userId)} 
             onAddComment={handleAddComment}
           />
+
+         {/* FullscreenModal  */}
+          <FullscreenModal isOpen={isModalOpen} onClose={closeFullscreen}>
+            {mediaType === 'image' && mediaUrl && (
+              <img src={mediaUrl} alt="Fullscreen" className="w-full h-auto max-h-screen object-contain rounded-lg" />
+            )}
+            {mediaType === 'video' && mediaUrl && (
+              <video
+                src={mediaUrl}
+                controls
+                autoPlay
+                className="w-full h-auto max-h-screen object-contain rounded-lg"
+              ></video>
+            )}
+          </FullscreenModal>
         </div>
       ))}
     </section>
