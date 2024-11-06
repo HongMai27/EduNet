@@ -35,6 +35,21 @@ export const getAllUser = async (req: Request, res: Response) => {
   }
 };
 
+// search user by username
+export const searchUserByUsername = async (req: Request, res: Response) => {
+  const { username } = req.query; 
+
+  try {
+    const users = await User.find({ username: { $regex: username, $options: 'i' } })
+      .select('-password');
+
+    res.json(users);
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 //get user follow
 export const getUserFollowersAndFollowings = async (req: AuthRequest, res: Response) => {
   try {
@@ -220,8 +235,11 @@ export const unfollowUser = async (req: AuthRequest, res: Response) => {
 
 // update status
 export const updateStatus = async (req: AuthRequest, res: Response) => {
-  const { userId, isOnline } = req.body; 
-  const lastActive = new Date().toISOString(); 
+  const { isOnline } = req.body; 
+  const userId = req.userId; // Lấy userId từ req.userId
+
+  // Lưu thời gian hiện tại
+  const lastActive = isOnline ? null : new Date().toISOString(); 
 
   try {
     const user = await User.findByIdAndUpdate(
@@ -238,6 +256,30 @@ export const updateStatus = async (req: AuthRequest, res: Response) => {
   } catch (err) {
     console.error("Error updating user status:", err);
     res.status(500).json({ msg: "Server error" });
+  }
+};
+
+//update status
+export const updateUserStatus = async (req: AuthRequest, res: Response) => {
+  const { isOnline } = req.body; 
+  const userId = req.userId; 
+  const lastActive = new Date();
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isOnline, lastActive }, 
+      { new: true } 
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "Status updated successfully", user });
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
