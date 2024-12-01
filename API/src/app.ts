@@ -12,7 +12,8 @@ import cookieSession from "cookie-session";
 import passport from "passport";
 import './middlewares/passport-setup';
 import Notification from "./models/notificationModel";
-import User from "./models/userModel"; 
+import User, { IUser } from "./models/userModel"; 
+import Post from "./models/postModel";
 
 const app = express();
 const server = http.createServer(app); // create http server
@@ -71,7 +72,7 @@ io.on('connection', (socket) => {
     
     if (userId) {
       userStatus[userId].isOnline = false;
-      updateUserStatus(userId, false); 
+      updateUserStatus(userId, false); // Cập nhật trạng thái offline cho người dùng trong DB
       delete userStatus[userId]; 
       console.log(`User ${userId} is offline.`);
     }
@@ -83,25 +84,46 @@ io.on('connection', (socket) => {
     io.emit('newMessage', data); 
   });
 
-  //notification
   socket.on('sendNotification', async (data) => {
-    const { userId, postId, type, username } = data; 
-
-    const message = type === 'like'
-      ? `${username} liked your post.`
-      : `${username} commented on your post.`;
-
-    const notification = new Notification({
-      userId: postId, 
-      message,
-      postId, 
-      type, 
-    });
-
-    await notification.save();
-
-    io.emit('newNotification', { message, postId });
+    const { postId, type, username, userId } = data;
+  
+    try {
+      const post = await Post.findById(postId)
+        .populate<{ user: IUser }>('user') 
+        .lean();
+  
+      if (!post || !post.user) {
+        console.log(`Post not found or has no owner: ${postId}`);
+        return;
+      }
+  
+      // Truy cập `post.user._id` vì TypeScript giờ đã hiểu `user` là một đối tượng `User`
+      const ownerUserId = post.user._id.toString();
+      const message = type === 'like'
+        ? `${username} liked your post.`
+        : `${username} commented on your post.`;
+  
+      const notification = new Notification({
+        userId: userId,  
+        ownerUserId: ownerUserId, 
+        message,
+        postId,
+        type,
+      });
+      await notification.save();
+  
+      const ownerSocket = userStatus[ownerUserId];
+      if (ownerSocket && ownerSocket.isOnline) {
+        io.to(ownerSocket.socketId).emit('newNotification', { message, postId });
+        console.log(`Sent notification to user ${ownerUserId}`);
+      } else {
+        console.log(`User ${ownerUserId} is offline; notification saved.`);
+      }
+    } catch (error) {
+      console.error(`Error in sendNotification for post ${postId}:`, error);
+    }
   });
+  
 
   // Video Call Events
   socket.on('startVideoCall', ({ receiverId, offer }) => {
@@ -121,10 +143,11 @@ const updateUserStatus = async (userId: string, isOnline: boolean) => {
   } catch (error) {
     console.error(`Error updating status for user ${userId}:`, error);
   }
-}
+};
 
 // limit upload file
 app.use(express.json({ limit: '10mb' }));
+
 
 connectDB();
 
