@@ -6,6 +6,10 @@ import bcrypt from "bcrypt";
 import crypto from 'crypto';
 import { OAuth2Client } from "google-auth-library";
 
+interface AuthRequest extends Request {
+  userId?: any;
+}
+
 //register
 export const register = async (req: Request, res: Response) => {
   const { username, email, password, confirmPassword } = req.body;
@@ -69,7 +73,7 @@ export const login = async (req: Request, res: Response) => {
 
     // create payload & token
     const payload = { userId: user._id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET || "secret", { expiresIn: "1h" });
+    const token = jwt.sign(payload, process.env.JWT_SECRET || "secret", { expiresIn: "3h" });
     res.json({ token });
     console.log('Log in success with token ', {token})
   } catch (err) {
@@ -124,63 +128,84 @@ export const googleLogin = async (req: Request, res: Response) => {
   }
 };
 
-// forget password
-const transporter = nodemailer.createTransport({
-  service: 'gmail', 
-  auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS, 
-  },
-});
-
 
 export const forgotPassword = async (request: Request, response: Response) => {
   try {
-      const { email } = request.body;
+    const { email } = request.body;
+    const existingUser = await User.findOne({ email });
 
-      const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return response.status(404).send({ message: "User not found" });
+    }
 
-      if (!existingUser) {
-          return response.status(404).send({ message: "User not found" });
+    const randomPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+    await User.updateOne({ _id: existingUser._id }, { password: hashedPassword });
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Đặt lại mật khẩu",
+      text: `Mật khẩu mới của bạn là: ${randomPassword}\n\n Vui lòng đăng nhập và đổi mật khẩu ngay sau khi đăng nhập`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return response.status(500).send({ message: "Error sending email", error: error.message });
       }
-
-      const randomPassword = Math.random().toString(36).slice(-8); 
-
-      const hashedPassword = await bcrypt.hash(randomPassword, 12);
-
-      await User.updateOne({ _id: existingUser._id }, { password: hashedPassword });
-
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465, // sử dụng cổng SSL cho Gmail
-        secure: true, // sử dụng SSL
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS 
-        },
+      console.log("Email sent:", info.response);
+      return response.status(200).send({ message: "New password sent to your email" });
     });
-
-      const mailOptions = {
-          from: process.env.EMAIL_USER, 
-          to: email,
-          subject: "Đặt lại mật khẩu",
-          text: `Mật khẩu mới của bạn là: ${randomPassword}\n\n Vui lòng đăng nhập và đổi mật khẩu ngay sau khi đăng nhập`,
-      };
-
-      // Gửi email
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error("Error sending email:", error); // In ra chi tiết lỗi
-            return response.status(500).send({ message: "Error sending email", error: error.message });
-        }
-        console.log("Email sent:", info.response);
-        return response.status(200).send({ message: "New password sent to your email" });
-    });
-    
 
   } catch (error) {
-      console.error("Error in forgot password:", error);
-      response.status(500).send({ message: "Error in forgot password" });
+    console.error("Error in forgot password:", error);
+    response.status(500).send({ message: "Error in forgot password", error: (error as Error).message });
   }
 };
 
+
+//change pass
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  try {
+      const { userId } = req; 
+      const { oldPassword, newPassword, confirmPassword } = req.body;
+
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).send({ message: "User not found" });
+      }
+
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+          return res.status(400).send({ message: "The old password is incorrect" });
+      }
+      if (newPassword.length < 8) {
+          return res.status(400).send({ message: "The new password must have at least 8 characters" });
+      }
+
+      if (newPassword !== confirmPassword) {
+          return res.status(400).send({ message: "The new password and confirmation password do not match" });
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+      await User.updateOne({ _id: userId }, { password: hashedNewPassword });
+
+      res.status(200).send({ message: "Change password success" });
+  } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).send({ message: "Change password: error" });
+  }
+};
