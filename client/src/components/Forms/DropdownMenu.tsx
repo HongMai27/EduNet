@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaEllipsisV } from 'react-icons/fa';
 import { IPost } from '../../types/IPost';
 import { useAuth } from '../../stores/AuthContext';
-import { deletePost } from '../../services/postService';
+import { deletePost, savePost, unsavePost } from '../../services/postService';
 import { useNavigate } from 'react-router-dom';
 import DeleteConfirmationModal from '../Modals/DeleteModal';
 import { toast } from 'react-toastify';
@@ -14,6 +14,7 @@ interface DropdownMenuButtonProps {
 const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
   const { userId } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false); 
   const [showDeleteModal, setShowDeleteModal] = useState(false); 
   const navigate = useNavigate();
 
@@ -28,6 +29,13 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
       setIsOpen(false);
     }
   };
+
+  useEffect(() => {
+    const savedPostStatus = localStorage.getItem(`savedPost-${post._id}`);
+    if (savedPostStatus === "true") {
+      setIsSaved(true);
+    }
+  }, [post._id]);
 
   React.useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
@@ -44,17 +52,7 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
   const handleConfirmDelete = async () => {
     try {
       await deletePost(post._id); 
-      
-      //  toast thành công
-      toast.success('Post deleted successfully', {
-        position: "top-right",
-        autoClose: 1000, 
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.success('Post deleted successfully');
   
 
       setTimeout(() => {
@@ -62,18 +60,7 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
       }, 1000); 
   
     } catch (err) {
-      console.error('Error deleting post:', err);
-  
-      //  toast lỗi
-      toast.error('Failed to delete post: ' + (err as Error).message, {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.error('Failed to delete post: ' + (err as Error).message);
     } finally {
       setIsOpen(false); 
       setShowDeleteModal(false); 
@@ -84,9 +71,37 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
     setShowDeleteModal(false); 
   };
 
-  // Điều hướng tới EditPostModal với dữ liệu bài viết
   const handleRedirectToEdit = () => {
     navigate(`/editpost`, { state: { postId: post._id, postContent: post.content, tag: post.tag } });
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await savePost(post._id);  
+      if (response && response.message === "Post saved successfully") {
+        setIsSaved(true);  
+        localStorage.setItem(`savedPost-${post._id}`, "true");  
+        toast.success('Saved post!');
+      }
+    } catch (error) {
+      console.error('Error saving post:', error);
+      toast.error('Error saving post!');
+    }
+  };
+
+  // Unsave post
+  const handleUnsave = async () => {
+    try {
+      const response = await unsavePost(post._id);
+      if (response && response.message === "Post unsaved successfully") {
+        setIsSaved(false);
+        localStorage.removeItem(`savedPost-${post._id}`);
+        toast.success('Post unsaved!');
+      }
+    } catch (error) {
+      console.error('Error unsaving post:', error);
+      toast.error('Error unsaving post!');
+    }
   };
 
   return (
@@ -107,7 +122,7 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
             </li>
             {userId === post.user?._id ? (
               <li
-                onClick={handleRedirectToEdit} // Điều hướng tới trang chỉnh sửa
+                onClick={handleRedirectToEdit} 
                 className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <i className="fas fa-edit mr-2 text-black dark:text-white"></i>
@@ -122,13 +137,13 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
                 Report
               </li>
             )}
-            <li
-              onClick={() => alert('Saved!')}
-              className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <i className="fas fa-save mr-2 text-black dark:text-white"></i>
-              Save
-            </li>
+              <li
+        onClick={isSaved ? handleUnsave : handleSave}
+        className={`px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 `}
+      >
+        <i className="fas fa-save mr-2 text-black dark:text-white"></i>
+        {isSaved ? "Unsave" : "Save"}
+      </li>
           </ul>
         </div>
       )}
