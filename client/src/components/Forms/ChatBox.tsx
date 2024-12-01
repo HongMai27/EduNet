@@ -6,6 +6,8 @@ import { IMessage } from "../../types/IMessage";
 import { FaPhone, FaRegWindowMaximize, FaVideo } from "react-icons/fa";
 import ChatModal from "../Modals/ChatMini";
 import { useChat } from "../../stores/ChatMiniContext";
+import Header from "./HeaderChatForm";
+import VideoStream from "./VideoCall";
 
 const Chat: React.FC<{ receiverId: string }> = ({ receiverId }) => {
   const { userId } = useAuth();
@@ -266,82 +268,35 @@ const endCall = () => {
 
   return (
     <div className="flex flex-col h-screen">
-       {/* Phần thông báo cuộc gọi đến */}
-       {isReceivingCall && incomingCall && (
+      {isReceivingCall && incomingCall && (
         <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col items-center justify-center bg-gray-800 bg-opacity-75 z-50">
           <div className="bg-white p-4 rounded-lg shadow-lg text-center">
             <h2 className="text-xl font-semibold mb-2">Cuộc gọi đến từ {incomingCall.callerName}</h2>
             <div className="flex space-x-4">
-              <button
-                onClick={() => acceptCall()} // Sử dụng `incomingCall.offer` hợp lệ
-                className="px-4 py-2 bg-green-500 text-white rounded-md"
-              >
+              <button onClick={() => acceptCall()} className="px-4 py-2 bg-green-500 text-white rounded-md">
                 Chấp nhận
               </button>
-              <button
-                onClick={rejectCall}
-                className="px-4 py-2 bg-red-500 text-white rounded-md"
-              >
+              <button onClick={rejectCall} className="px-4 py-2 bg-red-500 text-white rounded-md">
                 Từ chối
               </button>
             </div>
           </div>
         </div>
       )}
-      {/* Header với tên và avatar của người nhận */}
-      <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gray-100 border-b border-gray-300">
-        <div className="flex items-center space-x-4">
-          {receiverInfo && (
-            <>
-              <img
-                src={receiverInfo.avatar}
-                alt="Receiver Avatar"
-                className="w-10 h-10 rounded-full"
-              />
-              <h2 className="text-lg font-semibold">{receiverInfo.username}</h2>
-            </>
-          )}
-        </div>
-        <div className="flex space-x-4">
-          <button onClick={() => startCall(false)} className="p-2 rounded-full hover:bg-gray-200">
-            <FaPhone className="text-xl" />
-          </button>
-          <button onClick={() => startCall(true)} className="p-2 rounded-full hover:bg-gray-200">
-            <FaVideo className="text-xl" />
-          </button>
-          <button onClick={handleToggleChat} className="p-2 rounded-full hover:bg-gray-200">
-            <FaRegWindowMaximize className="text-xl" />
-          </button>
-        </div>
-      </div>
-    
-    {/* Video Stream */}
-    {isCalling && (
-          <div className="flex flex-col items-center justify-center flex-1">
-            <video
-              ref={(ref) => ref && localStream && (ref.srcObject = localStream)}
-              autoPlay
-              muted
-              className="w-1/2 border border-gray-400 rounded-lg"
-            />
-            <video
-              ref={(ref) => ref && remoteStream && (ref.srcObject = remoteStream)}
-              autoPlay
-              className="w-1/2 border border-gray-400 rounded-lg mt-4"
-            />
-            <button onClick={endCall} className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md">End Call</button>
-          </div>
-        )}
 
-  {isReceivingCall && (
-    <div className="call-notification fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-        <p className="text-lg font-semibold mb-4">{incomingCall?.callerName} is calling you...</p>
-        <button onClick={() => acceptCall()} className="px-4 py-2 bg-green-500 text-white rounded-md mr-2">Accept</button>
-        <button onClick={() => rejectCall()} className="px-4 py-2 bg-red-500 text-white rounded-md">Reject</button>
-      </div>
-    </div>
-  )}
+      <Header
+        receiverInfo={receiverInfo}
+        startCall={startCall}
+        handleToggleChat={handleToggleChat}
+      />
+
+      <VideoStream
+        isCalling={isCalling}
+        localStream={localStream}
+        remoteStream={remoteStream}
+        endCall={endCall}
+      />
+
       <div className="overflow-y-auto flex-1 p-4">
         {messages.length > 0 ? (
           messages.map((message) => (
@@ -351,7 +306,6 @@ const endCall = () => {
                 message.sender === userId ? "justify-end" : "justify-start"
               }`}
             >
-              {/* Hiển thị avatar của người gửi bên cạnh tin nhắn */}
               {message.sender !== userId && receiverInfo && (
                 <img
                   src={receiverInfo.avatar}
@@ -369,8 +323,7 @@ const endCall = () => {
                 >
                   <p>{message.content}</p>
                 </div>
-                {/* Time*/}
-                <p className={`text-xs text-gray-600`}>
+                <p className="text-xs text-gray-600">
                   {new Date(message.date).toLocaleTimeString()}
                 </p>
               </div>
@@ -381,12 +334,9 @@ const endCall = () => {
             <p className="text-gray-500">No message between us</p>
           </div>
         )}
-        <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} />
+
       </div>
-
-
-
-      {/* Message Input */}
       <div className="p-4 bg-white border-t border-gray-300">
         <div className="flex">
           <input
@@ -404,9 +354,8 @@ const endCall = () => {
           </button>
         </div>
       </div>
-      {isOpen && (
-        <ChatModal receiverId={receiverId} onClose={closeChat} />
-      )}
+
+      {isOpen && <ChatModal receiverId={receiverId} onClose={closeChat} />}
     </div>
   );
   

@@ -1,21 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
+import axios from 'axios';
 
 const socket = io('http://localhost:5000');
 
-const Notification: React.FC = () => {
+const Notification: React.FC<{ userId: string }> = ({ userId }) => {
   const [notifications, setNotifications] = useState<string[]>([]);
 
   useEffect(() => {
-    // Lắng nghe sự kiện thông báo từ server
+    // Hàm lấy thông báo từ API
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/auth/notifications/${userId}`);
+        setNotifications(response.data.map((notification: { message: string }) => notification.message));
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications(); // Gọi API khi component mount lần đầu
+
+    // Đăng nhập socket và lắng nghe thông báo mới
+    socket.emit('login', userId);
     socket.on('newNotification', (data: { message: string }) => {
-      setNotifications((prev) => [...prev, data.message]);
+      // Kiểm tra thông báo đã có trong danh sách chưa
+      setNotifications((prev) => {
+        if (!prev.includes(data.message)) {
+          return [...prev, data.message];
+        }
+        return prev;
+      });
     });
 
     return () => {
       socket.off('newNotification');
     };
-  }, []);
+  }, [userId]);
 
   return (
     <div className="p-4">
