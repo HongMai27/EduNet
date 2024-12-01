@@ -120,7 +120,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
         image: imageUrl, 
         video: videoUrl,  
         doc: docUrl,
-        visibility // Thêm thông tin visibility vào bài viết
+        visibility 
       };
 
       const token = localStorage.getItem('accessToken');
@@ -163,7 +163,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
         <div className="relative">
           <button
             className="flex items-center text-gray-500"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)} // Đổi trạng thái dropdown
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             {visibility === 'public' && <FaGlobe />}
             {visibility === 'friend' && <FaUserFriends />}

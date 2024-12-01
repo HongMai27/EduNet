@@ -10,12 +10,14 @@ import { IPost } from "../types/IPost";
 import NewsFeed from "../components/Forms/Newfeed";
 import Button from "../components/Forms/Button";
 import Modal from "../components/Modals/CreatePostModal";
+import useSocket from "../hooks/useSocket";
 
 const Home: React.FC = () => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false); 
-  const { handleLike } = useLike();
+  const socket = useSocket();
+  const { handleLike } = useLike({ socket });
   const { handleAddComment } = useAddcmt();
   const { userId } = useAuth();
   const { user } = useUser(userId);
@@ -40,11 +42,6 @@ const Home: React.FC = () => {
     const fetchedPosts = await fetchPosts();
     setPosts(fetchedPosts);
     setIsModalVisible(false);  
-  };
-
-  // Handle redirect to detail
-  const handleRedirect = (postId: string) => {
-    navigate(`/detail/${postId}`);
   };
 
   // Handle redirect to profile
@@ -81,14 +78,16 @@ const Home: React.FC = () => {
           </Modal>
 
           {/* Newsfeeds */}
-          <NewsFeed 
-            posts={posts} 
-            handleRedirect={handleRedirect} 
-            handleRedirectToProfile={handleRedirectToProfile}
-            handleLike={handleLike} 
-            handleAddComment={handleAddComment} 
-            setPosts={setPosts} 
-          />
+          <NewsFeed
+                posts={posts}
+                handleRedirect={(postId) => console.log(`Redirect to post ${postId}`)}
+                handleRedirectToProfile={handleRedirectToProfile}
+                handleLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts, userId!)}
+                handleAddComment={handleAddComment}
+                setPosts={setPosts}
+                userId={userId!} 
+                socket={socket}  
+              />
         </main>
       </div>
     </div>

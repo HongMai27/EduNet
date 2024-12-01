@@ -5,6 +5,7 @@ import DropdownMenuButton from './DropdownMenu';
 import PostActions from './PostActions';
 import { Socket } from 'socket.io-client';
 import FullscreenModal from '../Modals/FullscreenModal';
+import { useNavigate } from 'react-router-dom';
 
 interface NewsFeedProps {
   posts: IPost[];
@@ -33,6 +34,8 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
+  const navigate = useNavigate();
+
 
   const openFullscreen = (type: 'image' | 'video', url: string) => {
     setMediaType(type);
@@ -74,7 +77,7 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
             </div>
           </div>
 
-          <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 text-justify" onClick={() => handleRedirect(post._id)}>
+          <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 text-justify"  onClick={() => navigate(`/detail/${post._id}`)}>
             {post.content}
           </p>
 

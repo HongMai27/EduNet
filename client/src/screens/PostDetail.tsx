@@ -76,7 +76,6 @@ const PostDetail = () => {
         />
       </div>
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md w-[95%] mt-4">
-        <h3 className="text-xl font-semibold">Comments:</h3>
         {post.comments && post.comments.length > 0 ? (
           post.comments
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())

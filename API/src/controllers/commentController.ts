@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import Comment from "../models/commentModal";
-import Post from "../models/postModal";
+import Comment from "../models/commentModel";
+import Post from "../models/postModel";
 
 interface AuthRequest extends Request {
     userId?: any;

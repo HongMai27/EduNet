@@ -18,6 +18,7 @@ export interface IPost {
     post?: any;
     user: IUser;
     isVerified?: boolean;
+    likeCount: number
   }
   
   export interface LikeProps {

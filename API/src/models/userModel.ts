@@ -13,6 +13,7 @@ export interface IUser extends Document {
   avatar: string;
   imgcover:string;
   point?: number;
+  savedPosts: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
   friend: mongoose.Schema.Types.ObjectId[];
@@ -21,6 +22,9 @@ export interface IUser extends Document {
   posts: mongoose.Schema.Types.ObjectId[]; 
   comments: mongoose.Schema.Types.ObjectId[];
   comparePassword: (password: string) => Promise<boolean>;
+  resetPasswordToken?: string; 
+  resetPasswordExpires?: Date; 
+  role: 'admin' | 'user'; 
 }
 
 const userSchema: Schema<IUser> = new Schema({
@@ -68,6 +72,10 @@ const userSchema: Schema<IUser> = new Schema({
     type: Number,
     default: 50, 
   },
+  savedPosts: [{
+    type: Schema.Types.ObjectId,
+    ref: "Post"
+  }],
   followers: [{ 
     type: Schema.Types.ObjectId, 
     ref: "User" 
@@ -82,7 +90,7 @@ const userSchema: Schema<IUser> = new Schema({
   }],
   isOnline: { 
     type: Boolean, 
-    default: false 
+    default: true 
   }, 
   lastActive: { 
     type: String, 
@@ -96,7 +104,18 @@ const userSchema: Schema<IUser> = new Schema({
     type: Schema.Types.ObjectId, 
     ref: "Comment",
     required: true
-  }]
+  }],
+  resetPasswordToken: { 
+    type: String, 
+    default: null 
+  },
+  resetPasswordExpires: { 
+    type: Date, 
+    default: null 
+  },
+  role: { 
+    type: String, 
+    enum: ['admin', 'user'], default: 'user' },
 });
 
 // Hash password 

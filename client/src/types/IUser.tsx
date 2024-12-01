@@ -19,6 +19,9 @@ export interface IUser {
     posts: Array<IPost>;
     isOnline: boolean;
     lastActive: string;
+    postCount?: number
+    role: "admin" | "user";
+
   }
   export interface LoginProps {
     email: string;

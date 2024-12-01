@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
-import Tag from "../models/tagModal";
+import Tag from "../models/tagModel";
 
+// get all tag
 export const getTags = async (req: Request, res: Response) => {
     try {
       const tag = await Tag.find(); 
-      console.log("Tags found:", tag);
+      console.log("Tags found:");
       if (!tag.length) {
         return res.status(404).json({ msg: "No tags found." });
       }
@@ -21,6 +22,8 @@ export const getTags = async (req: Request, res: Response) => {
   };
 
 
+
+  //add tag
 export const addTag = async (req: Request, res: Response) => {
     const { tagname } = req.body;
     try {

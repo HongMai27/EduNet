@@ -7,18 +7,17 @@ interface AuthRequest extends Request {
   }
 // send mess
 export const sendMess = async (req: AuthRequest, res: Response) => {
-    const userId = req.params.id;  // ID của người gửi
-    const receiverId = req.params.receiverId;  // ID của người nhận
-    const content = req.body.content;  // Nội dung tin nhắn
-    const date = new Date().toISOString();  // Thời gian gửi tin nhắn
+    const userId = req.params.id;  
+    const receiverId = req.params.receiverId;  
+    const content = req.body.content;  
+    const date = new Date().toISOString();  
 
     try {
-        // Tìm cuộc hội thoại đã tồn tại giữa hai người
+        // check conversation or create new
         let conversation = await Conversation.findOne({
             participants: { $all: [userId, receiverId] }
         });
 
-        // Nếu cuộc hội thoại không tồn tại, tạo mới
         if (!conversation) {
             conversation = new Conversation({
                 participants: [userId, receiverId],
@@ -35,10 +34,7 @@ export const sendMess = async (req: AuthRequest, res: Response) => {
             date,
         });
 
-        // Lưu tin nhắn vào cơ sở dữ liệu
         await newMessage.save();
-
-        // Trả về tin nhắn vừa gửi
         res.status(200).json(newMessage);
     } catch (error) {
         console.error('Error sending message:', error);
@@ -48,19 +44,17 @@ export const sendMess = async (req: AuthRequest, res: Response) => {
 
 // get mess
 export const getMess = async (req: AuthRequest, res: Response) => {
-    const userId = req.params.id; // ID của người gửi
-    const receiverId = req.params.receiverId; // ID của người nhận
+    const userId = req.params.id; 
+    const receiverId = req.params.receiverId; 
 
     try {
-        // Tìm cuộc hội thoại giữa người gửi và người nhận
         const messages = await Message.find({
             $or: [
                 { sender: userId, receiver: receiverId },
                 { sender: receiverId, receiver: userId }
             ]
-        }).sort({ date: 1 }); // Sắp xếp tin nhắn theo thời gian gửi
+        }).sort({ date: 1 }); 
 
-        // Trả về danh sách tin nhắn
         res.status(200).json(messages);
     } catch (error) {
         console.error('Error fetching messages:', error);

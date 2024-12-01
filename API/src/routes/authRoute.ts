@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { register, login, googleLogin, forgotPassword } from "../controllers/authController";
-import { editProfile, followUser, getAllUser,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, searchUserByUsername, suggestFriend, unfollowUser, updateStatus, updateUserStatus } from "../controllers/userController";
+import { register, login, googleLogin, forgotPassword, changePassword } from "../controllers/authController";
+import { editProfile, followUser, getAllUser,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, getUserbyId, searchUserByUsername, suggestFriend, unfollowUser, updateStatus, updateUserStatus } from "../controllers/userController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { getMess, sendMess } from "../controllers/messageController";
 import { getNotifications } from "../controllers/notificationController";
@@ -12,9 +12,11 @@ router.post("/register", register);
 router.post("/login", login);
 router.post('/google-login', googleLogin);
 router.post('/forgot-password', forgotPassword);
+router.put('/change-pass', authMiddleware, changePassword)
 
 //profile
 router.get('/', getAllUser)
+router.get('/userinfor/:id', getUserbyId)
 router.get('/user/:id', getUserProfile);
 router.put('/user/:id', authMiddleware, editProfile)
 router.put("/update-status", authMiddleware, updateUserStatus);
@@ -32,7 +34,7 @@ router.post('/:id/messages/:receiverId',authMiddleware, sendMess);
 router.get('/:id/messages/:receiverId', authMiddleware, getMess);
 
 //notifiaction
-router.get('/notifications/:id', authMiddleware, getNotifications)
+router.get('/notifications/:userId', authMiddleware, getNotifications);
 
 //search
 router.get('/users/search', searchUserByUsername); 

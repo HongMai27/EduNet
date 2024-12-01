@@ -11,13 +11,15 @@ const useFormattedTimestamp = () => {
     const daysAgo = differenceInDays(now, date);
 
     if (minutesAgo < 60) {
-      return minutesAgo === 0 ? "Just now" : `${minutesAgo} minutes ago`;
+      return minutesAgo === 0 ? "Just now" : `${minutesAgo} minutes`;
     } else if (hoursAgo < 24) {
-      return `${hoursAgo} hours ago`;
-    } else if (daysAgo < 1) {
-      return "Today";
+      return `${hoursAgo} hours`;
+    } else if (daysAgo === 1) {
+      return "Yesterday";
+    } else if (daysAgo < 30) {
+      return `${daysAgo} day ago`;
     } else {
-      return format(date, "dd-MM 'at' HH:mm", { locale: vi });
+      return format(date, "dd/MM/yyyy", { locale: vi });
     }
   };
 
