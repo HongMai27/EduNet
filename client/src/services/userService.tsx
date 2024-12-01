@@ -116,3 +116,20 @@ export const unfriend = async (targetUserId: string) => {
 
   return response.data; 
 };
+
+//search by username
+export const searchUsersByUsername = async (searchTerm: string) => {
+  if (!searchTerm.trim()) {
+    return [];
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/users/search?username=${searchTerm}`);
+    return response.data; 
+  } catch (error) {
+    console.error('Error fetching search results:', error);
+    throw new Error('Failed to fetch search results'); 
+  }
+};
+
+
