@@ -25,6 +25,8 @@ export const fetchPostDetail = async (postId: string): Promise<IPost> => {
     return response.data;
   };
 
+
+
 // create post
   export const createPost = async (newPost: Omit<IPost, '_id'>): Promise<IPost> => {
     const token = localStorage.getItem('accessToken');
@@ -66,7 +68,7 @@ export const fetchPostDetail = async (postId: string): Promise<IPost> => {
 // get all tag
   export const fetchTags = async () => {
     const token = localStorage.getItem("accessToken"); 
-    const response = await axios.get("http://localhost:5000/api/posts/tag", {
+    const response = await axios.get(`${API_URL}/tag`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -74,6 +76,8 @@ export const fetchPostDetail = async (postId: string): Promise<IPost> => {
     return response.data; 
   };
 
+
+  //edit post
   export const editPost = async (postId: string, data: any) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -88,4 +92,60 @@ export const fetchPostDetail = async (postId: string): Promise<IPost> => {
     });
 
     return response.data; 
+  };
+
+// Save a post
+export const savePost = async (postId: string): Promise<any> => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const response = await axios.post(`${API_URL}/save-post/${postId}`,  {},
+      {
+        headers: {
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${token}`,  
+        },
+      }
+    );
+    return response.data;  
+  } catch (error) {
+    console.error('Error saving post:', error);
+    throw error;  
+  }
+};
+
+// Unsave a post
+export const unsavePost = async (postId: string): Promise<any> => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const response = await axios.post(`${API_URL}/unsave/${postId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error unsaving post:', error);
+    throw error;
+  }
+};
+
+// Get saved posts of the user
+export const getSavedPosts = async (userId: string): Promise<any> => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const response = await axios.get(`${API_URL}/getsaved/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;  // Trả về danh sách bài viết đã lưu
+  } catch (error) {
+    console.error('Error fetching saved posts:', error);
+    throw error;  // Nếu có lỗi, ném lỗi ra ngoài
+  }
 };
