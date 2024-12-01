@@ -3,24 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import { FaHome, FaBell, FaEnvelope, FaSearch, FaSun, FaMoon, FaUserCheck, FaUserGraduate } from "react-icons/fa";
 import useSocket from "../../hooks/useSocket";
 import NotificationModal from "../Modals/NotificationModal";
-import axios from "axios";
 import SearchResultsModal from "../Modals/ResultSearchModal";
 import { searchUsersByUsername } from "../../services/userService";
 import { updateUserStatus } from "../../hooks/updateStatus";
+import { INotification } from "../../types/INotification";
+import axios from "axios";
+import { useAuth } from "../../stores/AuthContext";
 
 interface NavbarProps {
   toggleDarkMode: () => void;
   darkMode: boolean;
 }
 
-interface Notification {
-  message: string;
-  timestamp: number;
-}
-
 
 const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const {userId} = useAuth();
   const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -30,33 +28,44 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [isModalOpen, setModalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const bellRef = useRef<HTMLButtonElement>(null); 
+  const notificationsRef = useRef<HTMLDivElement>(null);
   const location = useLocation(); 
   const currentPath = location.pathname; 
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
+  const [modalPosition, setModalPosition] = useState<{ top: number; left: number } | null>(null); // Vị trí của modal
+  const [notifications, setNotifications] = useState<INotification[]>(() => {
     const storedNotifications = localStorage.getItem("notifications");
     return storedNotifications ? JSON.parse(storedNotifications) : [];
   });
 
+  
   useEffect(() => {
     if (!socket) return;
 
     // Lắng nghe sự kiện `newNotification`
-    socket.on("newNotification", (data) => {
-      console.log("Received new notification:", data); 
+    // socket.on("newNotification", (data) => {
+    //   console.log("Received new notification:", data);
 
-      const newNotification: Notification = {
-        message: data.message,
-        timestamp: Date.now(), 
-      };
+    //   const newNotification: INotification = {
+    //     _id: data._id || '',
+    //     message: data.message,
+    //     timestamp: Date.now().toString(),
+    //     type: data.type || 'generic',
+    //     user: data.user || {}, // Cung cấp giá trị mặc định nếu không có dữ liệu
+    //     post: data.post || {}, // Cung cấp giá trị mặc định nếu không có dữ liệu
+    //   };
 
-      setNotifications((prev) => {
-        const updatedNotifications = [...prev, newNotification];
-        localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
-        return updatedNotifications;
-      });
+    //   // Cập nhật trạng thái notifications và lưu vào localStorage
+    //   setNotifications((prev) => {
+    //     const updatedNotifications = [newNotification, ...prev].slice(0, 10);
+    //     // Xóa tất cả dữ liệu trong localStorage
+    //     localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+    //     return updatedNotifications;
+    //   });
 
-      setUnreadCount((prev) => prev + 1);
-    });
+    //   // Cập nhật số lượng thông báo chưa đọc
+    //   setUnreadCount((prev) => prev + 1);
+    // });
 
     // Lắng nghe sự kiện tin nhắn mới
     socket.on("newMessage", (data) => {
@@ -64,12 +73,48 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
       setUnreadMessages((prev) => prev + 1);
     });
 
-    // Xóa sự kiện khi component unmount
+    // Xóa các listener khi component bị hủy
     return () => {
       socket.off("newNotification");
       socket.off("newMessage");
     };
   }, [socket]);
+  
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem('accessToken');  
+    
+    if (!token) {
+      console.error('No token found');
+      return; 
+    }
+  
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/auth/notifications/${userId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`, 
+          },
+        }
+      );
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+  
+
+  const openModal = () => {
+    setModalOpen(true);
+    fetchNotifications();  
+  };
+
+
+  // Đóng modal
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+  
 
   const handleSearch = async () => {
     try {
@@ -146,21 +191,27 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
           <span className="tooltip-text group-hover:opacity-100">Friends</span>
         </div>
 
-        {/* Notifications */}
+        {/* Notifications Section */}
         <div className="group relative flex items-center">
           <button
-            onClick={() => setModalOpen(true)} 
-            className={`text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out ${currentPath === '/notifications' ? 'border-b-2 border-blue-600' : ''}`}
+            ref={bellRef} 
+            onClick={openModal}
+            className="text-blue-600 dark:text-gray-300"
           >
             <FaBell size={28} />
           </button>
-          {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-600 text-white text-xs font-semibold rounded-full px-1.5">
-              {unreadCount}
-            </span>
-          )}
-          <span className="tooltip-text group-hover:opacity-100">Notifications</span>
+          <span className="tooltip-text group-hover:opacity-100">Notification</span>
         </div>
+
+        {/* Notification Modal */}
+        {isModalOpen && (
+          <NotificationModal
+            notifications={notifications}
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            notificationsRef={notificationsRef}  // Truyền ref vào prop
+          />
+        )}
 
         {/* Messages with Badge */}
         <div className="group relative flex items-center">
@@ -235,12 +286,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
           </span>
         </div>
 
-        {/* Notification Modal */}
-        <NotificationModal
-          notifications={notifications}
-          isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
-        />
+       
         
     
       </nav>

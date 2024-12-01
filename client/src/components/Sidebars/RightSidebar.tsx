@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react'; 
+import React, { useEffect, useState } from 'react';
 import { addFriend, fetchFollow, fetchFriends, fetchSuggest, unfriend } from '../../services/userService';
 import { IUser } from '../../types/IUser';
 import useFormattedTimestamp from '../../hooks/useFormatTimestamp';
 import axios from 'axios';
 import FollowButton from '../Forms/FollowButton';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate từ react-router-dom
+import ChatMini from '../Forms/ChatMini';
+import { useChat } from '../../stores/ChatMiniContext'; // Import useChat
 
 const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
   const [friends, setFriends] = useState<IUser[]>([]);
@@ -13,9 +15,11 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
   const [followers, setFollowers] = useState<IUser[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
-  const navigate = useNavigate(); // Khởi tạo useNavigate
+  const { openChat, closeChat, receiverId, isOpen } = useChat(); 
+  const navigate = useNavigate();
 
-  //load friends
+
+  // Load friends
   useEffect(() => {
     const loadFriends = async () => {
       try {
@@ -29,7 +33,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     loadFriends();
   }, []);
 
-  //load suggested
+  // Load suggested friends
   useEffect(() => {
     const loadSuggestions = async () => {
       try {
@@ -43,7 +47,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     loadSuggestions();
   }, []);
 
-  //load follow
+  // Load followings
   useEffect(() => {
     const loadFollows = async () => {
       try {
@@ -57,7 +61,16 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     loadFollows();
   }, []);
 
-  //check following, follower
+
+    // Handle redirect to profile
+    const handleRedirectToProfile = (userId: string) => {
+      navigate(`/profiles/${userId}`); 
+    };
+  const handleMessageClick = (friendId: string) => {
+    openChat(friendId); // Mở chat với ID bạn bè đã chọn
+  };
+
+  // Check following, follower
   const isFollowing = (userId: string) => {
     return followings.some(following => following._id === userId);
   };
@@ -66,7 +79,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     return followers.some(follower => follower._id === userId);
   };
 
-  // handle add friend
+  // Handle add friend
   const handleAddFriend = async (targetUserId: string) => {
     try {
       const response = await addFriend(targetUserId);
@@ -78,7 +91,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     }
   };
 
-  //handle unfriend
+  // Handle unfriend
   const handleUnfollow = async (targetUserId: string) => {
     try {
       const response = await unfriend(targetUserId);
@@ -93,11 +106,6 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
         alert("Unexpected error occurred. Please try again.");
       }
     }
-  };
-
-  // Handle message button click
-  const handleMessageClick = (receiverId: string) => {
-    navigate(`/messages/${receiverId}`); 
   };
 
   return (
@@ -115,7 +123,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
                 <img src={friend.avatar} alt={`${friend.username}'s avatar`} className="w-8 h-8 rounded-full" />
                 <div className="flex flex-col">
                   <span className="text-black dark:text-white">{friend.username}</span>
-                  <span className={`text-sm ${friend.isOnline ? 'text-green-500' : 'text-gray-500'}`}>
+                  <span className={`text-xs ${friend.isOnline ? 'text-green-500' : 'text-gray-500'}`}>
                     {friend.isOnline ? 'Online' : `Last Active: ${formatTimestamp(friend.lastActive)}`}
                   </span>
                 </div>
@@ -131,9 +139,9 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
         {error && <p className="text-red-500">{error}</p>}
         <ul className="space-y-4">
           {suggestions.map(suggestedFriend => (
-            <li key={suggestedFriend._id} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
-              <img src={suggestedFriend.avatar} alt={`${suggestedFriend.username}'s avatar`} className="w-8 h-8 rounded-full" />
-
+            <li key={suggestedFriend._id} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              <img src={suggestedFriend.avatar} alt={`${suggestedFriend.username}'s avatar`} className="w-8 h-8 rounded-full" onClick={() => handleRedirectToProfile(suggestedFriend._id)}/>
               <div className="flex flex-col w-full">
                 <span className="text-black dark:text-white">{suggestedFriend.username}</span>
                 <div className="flex space-x-2 mt-1 w-full"> 
@@ -147,17 +155,25 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
                   {/* Message Button */}
                   <button 
                     className="bg-gray-500 text-white text-sm py-1 px-2 rounded w-1/2 hover:bg-gray-600"
-                    onClick={() => handleMessageClick(suggestedFriend._id)} // Gọi hàm khi nhấn nút
+                    onClick={() => handleMessageClick(suggestedFriend._id)} 
                   >
                     Message
                   </button>
                 </div>
               </div>
-
             </li>
           ))}
         </ul>
       </div>
+
+      {/* Chat Mini Component - will be rendered through context */}
+      {isOpen && receiverId && (
+        <ChatMini 
+          receiverId={receiverId} 
+          isOpen={isOpen} 
+          onClose={closeChat} 
+        />
+      )}
     </div>
   );
 };
