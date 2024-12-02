@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { IUser } from '../types/IUser';
-import { fetchFollow, fetchFriends } from '../services/userService'; // Gọi hàm lấy dữ liệu từ API
+import { fetchFollow, fetchFriends } from '../services/userService'; 
 import useFormattedTimestamp from '../hooks/useFormatTimestamp';
 
 const FriendPage: React.FC = () => {
-    const [friends, setFriends] = useState<IUser[]>([]); // Danh sách bạn bè
-    const [suggestions, setSuggestions] = useState<IUser[]>([]); // Danh sách gợi ý
-    const [followings, setFollowings] = useState<IUser[]>([]); // Danh sách người theo dõi
-    const [followers, setFollowers] = useState<IUser[]>([]); // Danh sách người theo dõi
+    const [friends, setFriends] = useState<IUser[]>([]); 
+    const [suggestions, setSuggestions] = useState<IUser[]>([]); 
+    const [followings, setFollowings] = useState<IUser[]>([]); 
+    const [followers, setFollowers] = useState<IUser[]>([]); 
     const [error, setError] = useState<string | null>(null);
     const { formatTimestamp } = useFormattedTimestamp();
 
