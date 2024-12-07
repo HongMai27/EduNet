@@ -1,21 +1,30 @@
 import React from "react";
-import UserManagement from "./UserManagement"; // Component quản lý người dùng
-import PostManagement from "./PostManagement"; // Component quản lý bài viết
+import UserManagement from "./UserManagement"; 
+import PostManagement from "./PostManagement"; 
+import ReportManagement from "./ReportManagement";
+import { useMatch } from "react-router-dom";
+import PostDetails from "./ReportDetail";
 
 interface ContentAreaProps {
   selectedMenu: string;
 }
 
 const ContentArea: React.FC<ContentAreaProps> = ({ selectedMenu }) => {
-  if (selectedMenu === "user") {
-    return <UserManagement />;
-  }
+  const isPostDetail = useMatch("/admin/posts/:id");
 
-  if (selectedMenu === "posts") {
-    return <PostManagement />;
+  if (isPostDetail) {
+    return <PostDetails />;
   }
-
-  return <div className="p-6">Choose 1 section.</div>;
+  switch (selectedMenu) {
+    case "user":
+      return <UserManagement />;
+    case "posts":
+      return <PostManagement />;
+    case "report":
+      return <ReportManagement />;
+    default:
+      return <div>Welcome to Admin Dashboard</div>;
+  }
 };
 
 export default ContentArea;

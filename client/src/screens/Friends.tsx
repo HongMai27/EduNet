@@ -42,11 +42,11 @@ const FriendPage: React.FC = () => {
     }, []);
 
     return (
-        <div className="container mx-auto px-4 py-8 mt-20">
-            <div className="grid grid-cols-4 gap-4">
+        <div className="container mx-auto px-4 py-8 mt-20 dark:bg-gray-900 h-screen">
+            <div className="grid grid-cols-4 gap-4 dark:bg-gray-900">
                 {/* Cột Friends */}
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="font-bold text-lg mb-4">Friends</h2>
+                <div className="bg-white p-4 shadow rounded dark:bg-gray-700">
+                    <h2 className="font-bold text-lg mb-4 dark:text-white">Friends</h2>
                     {error && <p className="text-red-500">{error}</p>}
                     {friends.length === 0 ? (
                         <p className="text-gray-500">You have no friends! Let's make friends with suggested</p>
@@ -68,10 +68,10 @@ const FriendPage: React.FC = () => {
                 </div>
 
                 {/* Cột Followers */}
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="font-bold text-lg mb-4">Followers</h2>
+                <div className="bg-white p-4 shadow rounded dark:bg-gray-700">
+                    <h2 className="font-bold text-lg mb-4 dark:text-white">Followers</h2>
                     {followers.length === 0 ? (
-                        <p className="text-gray-500">No followers yet!</p>
+                        <p className="text-gray-500 ">No followers yet!</p>
                     ) : (
                         <ul className="space-y-4">
                             {followers.map(follower => (
@@ -85,8 +85,8 @@ const FriendPage: React.FC = () => {
                 </div>
 
                 {/* Cột Followings */}
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="font-bold text-lg mb-4">Followings</h2>
+                <div className="bg-white p-4 shadow rounded dark:bg-gray-700">
+                    <h2 className="font-bold text-lg mb-4 dark:text-white">Followings</h2>
                     {followings.length === 0 ? (
                         <p className="text-gray-500">You are not following anyone yet!</p>
                     ) : (
@@ -102,8 +102,8 @@ const FriendPage: React.FC = () => {
                 </div>
 
                 {/* Cột Suggestions */}
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="font-bold text-lg mb-4">Suggestions</h2>
+                <div className="bg-white p-4 shadow rounded dark:bg-gray-700">
+                    <h2 className="font-bold text-lg mb-4 dark:text-white">Suggestions</h2>
                     <ul className="space-y-4">
                         {suggestions.length === 0 ? (
                             <p className="text-gray-500">No suggestions available.</p>

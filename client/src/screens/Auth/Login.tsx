@@ -6,6 +6,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { updateUserStatus } from '../../hooks/updateStatus';
 import { googleLogin, login } from '../../services/authService';
 import axios from 'axios';
+import LogoImage from '../../image/logo.png'
 
 
 const Login: React.FC = () => {
@@ -70,93 +71,94 @@ const Login: React.FC = () => {
         backgroundImage: `url('https://png.pngtree.com/thumb_back/fh260/background/20210115/pngtree-blue-gradient-web-ui-background-image_518658.jpg')`,
       }}
     >
-      <div className="flex flex-wrap items-center justify-center lg:justify-between container h-full px-20 py-24  bg-opacity-80 rounded-lg shadow-lg backdrop-blur-sm">
-        {/* Background left */}
-        <div className="mb-12 lg:w-6/12">
+      {/* Form Container */}
+      <div className="bg-white/70 backdrop-blur-lg p-8 rounded-lg shadow-lg max-w-md w-full ">
+        {/* Logo */}
+        <div className="mb-6">
           <img
-            src="https://static.vecteezy.com/system/resources/thumbnails/014/430/730/small/welcome-lettering-with-black-color-png.png"
-            className="w-full"
-            alt="Phone image"
+            src={LogoImage}
+            className="w-60 h-20 mx-auto"
+            alt="Logo"
           />
         </div>
   
-        {/* Form login */}
-        <div className="lg:w-5/12">
-          <form onSubmit={handleLogin}>
-            {error && (
-              <div className="text-red-500 text-sm mb-4">{error}</div>
-            )}
+        {/* Form */}
+        <form onSubmit={handleLogin}>
+          {error && (
+            <div className="text-red-500 text-sm mb-4">{error}</div>
+          )}
   
-            {/* Input email */}
-            <div className="mb-4">
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="email"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your email"
-                required
-                autoComplete="email"
-              />
-            </div>
-  
-            {/* Input password */}
-            <div className="mb-6">
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="password"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your password"
-                required
-                autoComplete="current-password"
-              />
-            </div>
-  
-            {/* Submit button */}
-            <Button type="submit">Login</Button>
-          </form>
-  
-          <div className="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
-            <p className="mx-4 mb-0 text-center font-semibold dark:text-neutral-200">
-              OR
-            </p>
+          {/* Input email */}
+          <div className="mb-4">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="email"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your email"
+              required
+              autoComplete="email"
+            />
           </div>
   
-          {/* Login with Google */}
-          <GoogleLogin
-            onSuccess={handleGoogleLoginSuccess}
-            onError={handleGoogleLoginFailure}
-          />
+          {/* Input password */}
+          <div className="mb-6">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your password"
+              required
+              autoComplete="current-password"
+            />
+          </div>
   
-          {/* Forget Password Link */}
-          <p className="mt-4 text-sm text-gray-600 text-center">
-            <a href="/forgot-password" className="text-blue-500 hover:text-blue-700">
-              Forgot password?
-            </a>
-          </p>
+          {/* Submit button */}
+          <Button type="submit" className="w-full">Login</Button>
+        </form>
   
-          <p className="mt-4 text-sm text-gray-600 text-center">
-            You don't have an account?{" "}
-            <a href="/register" className="text-blue-500 hover:text-blue-700">
-              Register here
-            </a>
+        {/* Divider */}
+        <div className="my-4 flex items-center before:flex-1 before:border-t before:border-neutral-300 after:flex-1 after:border-t after:border-neutral-300">
+          <p className="mx-4 mb-0 text-center font-semibold dark:text-neutral-200">
+            OR
           </p>
         </div>
+  
+        {/* Login with Google */}
+        <GoogleLogin
+          onSuccess={handleGoogleLoginSuccess}
+          onError={handleGoogleLoginFailure}
+        />
+  
+        {/* Forget Password */}
+        <p className="mt-4 text-sm text-gray-600 text-center">
+          <a href="/forgot-password" className="text-blue-500 hover:text-blue-700">
+            Forgot password?
+          </a>
+        </p>
+  
+        {/* Register */}
+        <p className="mt-4 text-sm text-gray-600 text-center">
+          You don't have an account?{" "}
+          <a href="/register" className="text-blue-500 hover:text-blue-700">
+            Register here
+          </a>
+        </p>
       </div>
     </section>
   );

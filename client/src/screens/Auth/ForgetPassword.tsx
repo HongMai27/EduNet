@@ -16,18 +16,22 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div 
+      className="flex h-screen justify-center items-center bg-cover bg-no-repeat" 
+      style={{ backgroundImage: `url('https://png.pngtree.com/thumb_back/fh260/background/20210115/pngtree-blue-gradient-web-ui-background-image_518658.jpg')` }}
+    >
+    <div className="flex min-h-screen">
       {/* Left Side - Image */}
-      <div className="w-1/2 bg-blue-100">
+      <div className="w-3/4">
         <img
-          src="https://img.freepik.com/free-vector/forgot-password-concept-illustration_114360-1095.jpg"  
+          src="https://cdni.iconscout.com/illustration/premium/thumb/forgot-password-illustration-download-in-svg-png-gif-file-formats--lock-pin-security-reset-social-media-pack-people-illustrations-6061606.png?f=webp"  
           alt="Forgot Password"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain bg-transparent"
         />
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-1/2 flex justify-center items-center bg-white p-8">
+      <div className="w-1/2 flex justify-center items-center p-8">
         <div className="w-full max-w-sm">
           <h2 className="text-center text-3xl font-semibold text-blue-600 mb-6">Forgot Password?</h2>
           <p className="mt-4 text-sm text-gray-600 text-center">
@@ -59,6 +63,7 @@ const ForgotPassword: React.FC = () => {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 };

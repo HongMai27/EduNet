@@ -24,14 +24,13 @@ const ChatPage: React.FC = () => {
 
 
   return (
-    <div className=" dark:bg-gray-900 dark:text-gray-100 flex flex-col  ">
-      <div className="flex ">
-        <main className="flex-1 bg-white dark:text-gray-100  shadow-md ">
-        <div className="grid grid-cols-10 gap-6">
+    <div className=" flex  mt-20 dark:bg-gray-900">
+        <main className="flex-1 bg-white dark:text-gray-100  shadow-md overflow-y-auto dark:bg-gray-900">
+        <div className="grid grid-cols-10 ">
           {/* List fr */}
-          <div className="col-span-2 fixed w-72 h-screen bg-white dark:bg-gray-800 p-4 mt-20 shadow-md overflow-y-auto rounded-lg">
+          <div className="col-span-2 fixed w-72 h-screen bg-white dark:bg-gray-800 p-4 shadow-md overflow-y-auto ">
             <h2 className="text-2xl font-bold mb-4">Messages</h2>
-            <div className="mb-4">
+            <div className="mb-4 ">
               {error && <p className="text-red-500">{error}</p>}
               {friends.length === 0 ? (
                 <p className="text-gray-500">You have no friends! Let make friends with suggested</p>
@@ -63,18 +62,25 @@ const ChatPage: React.FC = () => {
           </div>
 
           {/* conversation */}
-          <div className="col-span-8 p-4 mt-20 rounded-lg ml-80 w-full min-w-max min-h-screen">
+          <div className="col-span-9 ml-72 w-[90%] bg-gray-100 dark:bg-gray-900 dark:text-gray-100 h-screen">
             {selectedFriendId ? (
               <Chat receiverId={selectedFriendId} />
             ) : (
-              <p>Please select a friend to start chatting</p>
+              <div className="text-center mt-20">
+              <h1>Please select a friend to start chatting</h1>
+              {/* Image */}
+              <img 
+                src="https://png.pngtree.com/png-vector/20240530/ourmid/pngtree-friends-are-the-family-we-choose-t-shirt-design-with-png-image_12549128.png" 
+                alt="Chat Illustration" 
+                className="w-1/3 h-auto mx-auto"
+              />
+            </div>
             )}
           </div>
         </div>
 
 
         </main>
-      </div>
     </div>
   );
 };
