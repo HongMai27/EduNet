@@ -65,6 +65,45 @@ export const fetchPostDetail = async (postId: string): Promise<IPost> => {
     return response.data; 
   };
 
+  //delete comment
+  export const deleteComment = async (postId: string, commentId: string) => {
+    const token = localStorage.getItem('accessToken');
+  
+    if (!token) {
+      throw new Error('No access token found');
+    }
+  
+    const response = await axios.delete(`${API_URL}/${postId}/comment/${commentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    return response.data;
+  };
+  
+
+  //edit comment
+  export const editComment = async (postId: string, commentId: string, newContent: string) => {
+    const token = localStorage.getItem('accessToken');
+  
+    if (!token) {
+      throw new Error('No access token found');
+    }
+  
+    const response = await axios.put(`${API_URL}/${postId}/comment/${commentId}`,
+      { content: newContent },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  
+    return response.data;
+  };
+  
+
 // get all tag
   export const fetchTags = async () => {
     const token = localStorage.getItem("accessToken"); 
