@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaBell, FaEnvelope, FaSearch, FaSun, FaMoon, FaUserCheck, FaUserGraduate } from "react-icons/fa";
+import { FaHome, FaBell, FaEnvelope, FaSearch, FaSun, FaMoon, FaUserCheck, FaUserGraduate, FaUsers, FaIdBadge } from "react-icons/fa";
 import useSocket from "../../hooks/useSocket";
 import NotificationModal from "../Modals/NotificationModal";
 import SearchResultsModal from "../Modals/ResultSearchModal";
@@ -8,7 +8,10 @@ import { searchUsersByUsername } from "../../services/userService";
 import { updateUserStatus } from "../../hooks/updateStatus";
 import { INotification } from "../../types/INotification";
 import axios from "axios";
+import LogoImage from '../../image/logo.png'
 import { useAuth } from "../../stores/AuthContext";
+import ChatModal from "../Modals/ChatMini";
+import ChatBot from "../Modals/ChatBot";
 
 interface NavbarProps {
   toggleDarkMode: () => void;
@@ -30,6 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const bellRef = useRef<HTMLButtonElement>(null); 
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const [isChatBotOpen, setIsChatBotOpen] = useState(false);
   const location = useLocation(); 
   const currentPath = location.pathname; 
   const [modalPosition, setModalPosition] = useState<{ top: number; left: number } | null>(null); // Vị trí của modal
@@ -41,31 +45,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
   
   useEffect(() => {
     if (!socket) return;
-
-    // Lắng nghe sự kiện `newNotification`
-    // socket.on("newNotification", (data) => {
-    //   console.log("Received new notification:", data);
-
-    //   const newNotification: INotification = {
-    //     _id: data._id || '',
-    //     message: data.message,
-    //     timestamp: Date.now().toString(),
-    //     type: data.type || 'generic',
-    //     user: data.user || {}, // Cung cấp giá trị mặc định nếu không có dữ liệu
-    //     post: data.post || {}, // Cung cấp giá trị mặc định nếu không có dữ liệu
-    //   };
-
-    //   // Cập nhật trạng thái notifications và lưu vào localStorage
-    //   setNotifications((prev) => {
-    //     const updatedNotifications = [newNotification, ...prev].slice(0, 10);
-    //     // Xóa tất cả dữ liệu trong localStorage
-    //     localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
-    //     return updatedNotifications;
-    //   });
-
-    //   // Cập nhật số lượng thông báo chưa đọc
-    //   setUnreadCount((prev) => prev + 1);
-    // });
 
     // Lắng nghe sự kiện tin nhắn mới
     socket.on("newMessage", (data) => {
@@ -81,11 +60,11 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
   }, [socket]);
   
   const fetchNotifications = async () => {
-    const token = localStorage.getItem('accessToken');  
-    
+    const token = localStorage.getItem('accessToken');
+  
     if (!token) {
       console.error('No token found');
-      return; 
+      return; // Ngừng nếu không có token
     }
   
     try {
@@ -93,16 +72,36 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
         `http://localhost:5000/api/auth/notifications/${userId}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`, 
+            'Authorization': `Bearer ${token}`,
           },
         }
       );
-      setNotifications(response.data);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+  
+      if (response.status === 200) {
+        // Kiểm tra nếu status code là 200
+        setNotifications(response.data);
+      } else {
+        console.error(`Failed to fetch notifications: ${response.statusText}`);
+      }
+    } catch (error: unknown ) {
+      // Kiểm tra lỗi và thông báo rõ ràng hơn
+      if (error instanceof Error) {
+        console.error('Error fetching notifications:', error.message);
+      } else {
+        console.error('Unknown error occurred:', error);
+      }
     }
   };
   
+  
+  
+  const handleOpenChat = () => {
+    setIsChatBotOpen(true);
+  };
+
+  const handleCloseChat = () => {
+    setIsChatBotOpen(false);
+  };
 
   const openModal = () => {
     setModalOpen(true);
@@ -143,9 +142,21 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-md p-4 flex items-center justify-between z-50">
-      <div className="text-2xl font-bold text-blue-600 dark:text-white">
-        <Link to="/">EduNet</Link>
+      <div 
+        className="text-2xl font-bold text-blue-600 dark:text-white"
+        onClick={handleOpenChat}
+      >
+      <img
+            src={LogoImage}
+            className="w-40 h-10 mx-auto"
+            alt="Logo"
+          />   
+           
       </div>
+
+      {isChatBotOpen && (
+        <ChatBot receiverId="gemini" onClose={handleCloseChat} />
+      )}
 
       {/* Search */}
       <div className="flex-1 mx-4">
@@ -276,6 +287,15 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
           )}
         </div>
 
+        <div className="group relative flex items-center">
+          <Link
+            to="/groups"
+            className={`text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out ${currentPath === '/groups' ? 'border-b-2 border-blue-600' : ''}`}
+          >
+            <FaIdBadge size={28} /> 
+          </Link>
+          <span className="tooltip-text group-hover:opacity-100">Groups</span>
+        </div>
         {/* Dark Mode Toggle */}
         <div className="group relative flex items-center">
           <button onClick={toggleDarkMode} className="text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out">

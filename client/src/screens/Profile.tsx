@@ -201,16 +201,15 @@ const Profile: React.FC = () => {
   {uploadError && <div className="error-message">{uploadError}</div>}
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-gray-100 flex flex-col pt-20">
-      <div className="flex flex-1 p-5">
-        <main className="flex-1 bg-white dark:bg-gray-800 dark:text-gray-100 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+    <div className="container mx-auto px-4 py-8 mt-20 dark:bg-gray-800">
+        <main className="flex-1 bg-white dark:bg-gray-800 dark:text-gray-100 ">
           <div className="grid grid-cols-10 gap-6">
             <div className="col-span-3 p-4 border border-gray-300 dark:border-gray-700 rounded-lg h-[calc(100vh-160px)] self-start bg-white dark:bg-gray-800 flex flex-col items-center justify-between">
-              <div className="w-full mb-4 h-60 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-                <img src={user?.imgcover} alt="Cover" className="w-full h-full object-cover" />
-              </div>
               
-              <div className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full mb-2 cursor-pointer relative" onClick={() => setAvatarModalOpen(true)}>
+              <div 
+                className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full mb-2 cursor-pointer relative mt-24" 
+                onClick={() => setAvatarModalOpen(true)}
+              >
                 <img src={isImageUploaded || user?.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
               </div>
 
@@ -295,7 +294,6 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </main>
-      </div>
 
       <EditProfileModal
         isOpen={isModalOpen}

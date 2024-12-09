@@ -156,7 +156,7 @@ const SettingsPage: React.FC = () => {
                 Click here if you've forgotten your password and need help recovering it.
               </p>
               <img
-                src="https://img.freepik.com/free-vector/forgot-password-concept-illustration_114360-1095.jpg?t=st=1730974051~exp=1730977651~hmac=6803c99620a24e82b4f2a70402c258c50973c0595f6355b799d39f66417645b4&w=740" 
+                src="https://cdni.iconscout.com/illustration/premium/thumb/forgot-password-illustration-download-in-svg-png-gif-file-formats--lock-pin-security-reset-social-media-pack-people-illustrations-6061606.png?f=webp" 
                 alt="Forget Password Illustration"
                 className="w-full h-auto object-cover rounded-lg"
                 onClick={() => setModalForgotpass(true)}
@@ -170,7 +170,7 @@ const SettingsPage: React.FC = () => {
                 Update your current password to keep your account secure.
               </p>
               <img
-                src="https://img.freepik.com/free-vector/reset-password-concept-illustration_114360-7966.jpg?t=st=1730973561~exp=1730977161~hmac=8d411338d148957d0ddcae995eb638221718ff54e37b6a5521172cb216ff6a4c&w=740" 
+                src="https://cdni.iconscout.com/illustration/premium/thumb/mobile-login-illustration-download-in-svg-png-gif-file-formats--sign-profile-account-security-technology-and-protection-pack-science-illustrations-4707996.png?f=webp" 
                 alt="Change Password Illustration"
                 className="w-full h-auto object-cover rounded-lg"
                 onClick={() => setModalChangepass(true)}

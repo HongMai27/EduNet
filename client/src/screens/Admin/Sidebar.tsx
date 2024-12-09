@@ -35,6 +35,12 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenu, adminUsername, admin
           <FaListAlt className="inline mr-2" /> Posts Management
         </li>
         <li
+          className={`cursor-pointer p-2 rounded ${selectedMenu === "report" ? "font-bold bg-gray-700" : "hover:bg-gray-700"}`}
+          onClick={() => setSelectedMenu("report")}
+        >
+          <FaListAlt className="inline mr-2" /> Report Management
+        </li>
+        <li
           className={`cursor-pointer p-2 rounded ${selectedMenu === "analytics" ? "font-bold bg-gray-700" : "hover:bg-gray-700"}`}
           onClick={() => setSelectedMenu("analytics")}
         >
