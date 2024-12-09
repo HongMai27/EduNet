@@ -6,6 +6,7 @@ export interface INotification extends Document {
   message: string; 
   postId: mongoose.Schema.Types.ObjectId;
   type: "like" | "comment" | "share" | "save" | "follow"; 
+  isRead: boolean;
   timestamp: Date; 
 }
 
@@ -34,6 +35,11 @@ const notificationSchema: Schema<INotification> = new Schema({
     enum: ["like", "comment", "share", "save", "follow"], 
     required: true 
   },
+  isRead: { 
+    type: Boolean, 
+    default: false 
+  },
+
   timestamp: { 
     type: Date, 
     default: Date.now 

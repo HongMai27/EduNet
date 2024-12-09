@@ -3,10 +3,11 @@ import { register, login, googleLogin, forgotPassword, changePassword } from "..
 import { editProfile, followUser, getAllUser,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, getUserbyId, searchUserByUsername, suggestFriend, unfollowUser, updateStatus, updateUserStatus } from "../controllers/userController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { getMess, sendMess } from "../controllers/messageController";
-import { getNotifications } from "../controllers/notificationController";
+import { deleteNotification, getNotifications, markAsRead, sendNotification } from "../controllers/notificationController";
+import { suggestFriends } from "../controllers/geolocationController";
 
 const router = Router();
-
+    
 //login, register, forgetpass, resetpass
 router.post("/register", register);
 router.post("/login", login);
@@ -27,6 +28,8 @@ router.put('/unfollow/:id', authMiddleware, unfollowUser);
 router.put('/updatestatus', authMiddleware, updateStatus)
 router.get('/friend', authMiddleware, getFriendsWithStatus)
 router.get('/suggest', authMiddleware, suggestFriend)
+router.get('/suggest-friends', suggestFriends)
+
 router.get('/getfollow', authMiddleware, getUserFollowersAndFollowings)
 
 //chat
@@ -34,7 +37,15 @@ router.post('/:id/messages/:receiverId',authMiddleware, sendMess);
 router.get('/:id/messages/:receiverId', authMiddleware, getMess);
 
 //notifiaction
-router.get('/notifications/:userId', authMiddleware, getNotifications);
+// router.get('/notifications/:userId', authMiddleware, getNotifications);
+router.post('/notifications', authMiddleware, sendNotification)
+router.get('/notifications/:id', authMiddleware, getNotifications)
+router.put('/notifications/:id', authMiddleware, markAsRead)
+router.delete('/notifications/:id', authMiddleware, deleteNotification)
+
+
+
+
 
 //search
 router.get('/users/search', searchUserByUsername); 

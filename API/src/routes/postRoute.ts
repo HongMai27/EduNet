@@ -5,9 +5,12 @@ import { getPostLikes, likePost, unlikePost } from "../controllers/likeControlle
 import { addComment, deleteComment, editComment, getComments,  } from "../controllers/commentController";
 import { addTag, getTags  } from "../controllers/tagController";
 import { createGroup, getGroups } from "../controllers/groupController";
+import { createReport, getAllReports, getReportById, getReports } from "../controllers/reportedController";
 
 const router = Router();
-
+router.get("/reports", getReports);
+router.get('/reports/:id', getReportById);  
+router.get('/getallreport', getAllReports)
 router.get("/group", getGroups);
 
 //post
@@ -23,7 +26,8 @@ router.post('/save-post/:id', authMiddleware, savePost);
 router.post('/unsave/:id', authMiddleware, unsavePost);
 router.get('/getsaved/:id', authMiddleware, getSavedPosts)
 
-
+//report
+router.post("/reports", authMiddleware, createReport);
 
 //like, unlike
 router.post('/:id/like', authMiddleware, likePost);

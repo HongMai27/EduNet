@@ -14,6 +14,7 @@ import './middlewares/passport-setup';
 import Notification from "./models/notificationModel";
 import User, { IUser } from "./models/userModel"; 
 import Post from "./models/postModel";
+import axios from "axios";
 
 const app = express();
 const server = http.createServer(app); // create http server
@@ -25,7 +26,7 @@ interface UserStatus {
     socketId: string;
   };
 }
-const userStatus: UserStatus = {};
+export const userStatus: UserStatus = {};
 
 app.use(
   cookieSession({
@@ -57,6 +58,8 @@ const io = new Server(server, {
   },
 });
 
+export {io};
+
 io.on('connection', (socket) => {
   console.log('Người dùng đã kết nối: ', socket.id);
 
@@ -65,6 +68,7 @@ io.on('connection', (socket) => {
     updateUserStatus(userId, true); 
     console.log(`User ${userId} is online.`);
   });
+  
 
   // disconnect
   socket.on('disconnect', () => {
@@ -72,7 +76,7 @@ io.on('connection', (socket) => {
     
     if (userId) {
       userStatus[userId].isOnline = false;
-      updateUserStatus(userId, false); // Cập nhật trạng thái offline cho người dùng trong DB
+      updateUserStatus(userId, false); 
       delete userStatus[userId]; 
       console.log(`User ${userId} is offline.`);
     }
@@ -84,43 +88,61 @@ io.on('connection', (socket) => {
     io.emit('newMessage', data); 
   });
 
+
+  // send noti
   socket.on('sendNotification', async (data) => {
     const { postId, type, username, userId } = data;
   
     try {
-      const post = await Post.findById(postId)
-        .populate<{ user: IUser }>('user') 
-        .lean();
+      const post = await Post.findById(postId).populate<{ user: IUser }>('user').lean();
   
       if (!post || !post.user) {
         console.log(`Post not found or has no owner: ${postId}`);
         return;
       }
   
-      // Truy cập `post.user._id` vì TypeScript giờ đã hiểu `user` là một đối tượng `User`
-      const ownerUserId = post.user._id.toString();
-      const message = type === 'like'
+      const ownerId = post.user._id.toString();
+      const message =
+      type === 'like'
         ? `${username} liked your post.`
-        : `${username} commented on your post.`;
+        : type === 'comment'
+        ? `${username} commented on your post.`
+        : type === 'share'
+        ? `${username} shared your post.`
+        : type === 'save'
+        ? `${username} saved your post.`
+        : type === 'follow'
+        ? `${username} started following you.`
+        : 'You have a new notification.';
+
   
+      // Lưu thông báo vào database
       const notification = new Notification({
-        userId: userId,  
-        ownerUserId: ownerUserId, 
+        userId,
+        ownerId,
         message,
         postId,
         type,
       });
       await notification.save();
   
-      const ownerSocket = userStatus[ownerUserId];
-      if (ownerSocket && ownerSocket.isOnline) {
-        io.to(ownerSocket.socketId).emit('newNotification', { message, postId });
-        console.log(`Sent notification to user ${ownerUserId}`);
+      // Gọi API để lấy trạng thái isOnline của ownerId
+      const response = await axios.get(`http://localhost:5000/api/auth/user/${ownerId}`);
+      const { isOnline } = response.data; // Giả sử API trả về { isOnline: true/false }
+  
+      if (isOnline) {
+        io.to(userStatus[userId]?.socketId).emit('newNotification', {
+          message,
+          postId,
+          type,
+          senderId: userId,
+        });
+        console.log(`Notification sent to owner ${ownerId}`);
       } else {
-        console.log(`User ${ownerUserId} is offline; notification saved.`);
+        console.log(`Owner ${ownerId} is offline. Notification saved.`);
       }
     } catch (error) {
-      console.error(`Error in sendNotification for post ${postId}:`, error);
+      console.error(`Error sending notification for post ${postId}:`, error);
     }
   });
   
