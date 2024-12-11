@@ -91,7 +91,8 @@ io.on('connection', (socket) => {
 
   // send noti
   socket.on('sendNotification', async (data) => {
-    const { postId, type, username, userId } = data;
+    console.log('Received data:', data);
+    const { postId, type, username, userId, avatar } = data;
   
     try {
       const post = await Post.findById(postId).populate<{ user: IUser }>('user').lean();
@@ -120,6 +121,8 @@ io.on('connection', (socket) => {
       const notification = new Notification({
         userId,
         ownerId,
+        username,
+        avatar,
         message,
         postId,
         type,
@@ -128,12 +131,14 @@ io.on('connection', (socket) => {
   
       // Gọi API để lấy trạng thái isOnline của ownerId
       const response = await axios.get(`http://localhost:5000/api/auth/user/${ownerId}`);
-      const { isOnline } = response.data; // Giả sử API trả về { isOnline: true/false }
+      const { isOnline } = response.data; 
   
       if (isOnline) {
         io.to(userStatus[userId]?.socketId).emit('newNotification', {
           message,
           postId,
+          username,
+          avatar,
           type,
           senderId: userId,
         });

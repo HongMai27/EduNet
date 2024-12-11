@@ -3,6 +3,8 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface INotification extends Document {
   ownerId: mongoose.Schema.Types.ObjectId; 
   userId: mongoose.Schema.Types.ObjectId; 
+  username: string;
+  avatar: string;
   message: string; 
   postId: mongoose.Schema.Types.ObjectId;
   type: "like" | "comment" | "share" | "save" | "follow"; 
@@ -22,6 +24,14 @@ const notificationSchema: Schema<INotification> = new Schema({
     required: true 
   },
   message: { 
+    type: String, 
+    required: true 
+  },
+  username: { 
+    type: String, 
+    required: true 
+  },
+  avatar: { 
     type: String, 
     required: true 
   },

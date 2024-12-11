@@ -7,5 +7,7 @@ export interface INotification{
     timestamp: string;
     type: string;
     userId: IUser;
+    username: string;
+    avatar: string;
     postId: IPost;
 }

@@ -17,6 +17,7 @@ import ForgotPassword from '../screens/Auth/ForgetPassword';
 import FriendPage from '../screens/Friends';
 import SettingsPage from '../screens/Setting';
 import AdminDashboard from '../screens/Admin/AdminDashboard';
+import PostDetails from '../screens/Admin/ReportDetail';
 
 // Wrapper component để lấy receiverId từ URL
 const ChatMini: React.FC = () => {
@@ -44,7 +45,7 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
   const hideSidebars =
     ['/login', '/register', '/forgot-password', '/admin'].includes(location.pathname) || isProfile || isProfileDetail || isChat || isFriends || isSetting ;
 
-  const showNavbar = !['/login', '/register', '/forgot-password', '/admin'].includes(location.pathname);
+  const showNavbar = !['/login', '/register', '/forgot-password', '/admin', '/admin/posts/:id'].includes(location.pathname);
 
   return (
     <>
@@ -146,6 +147,15 @@ const AppContent: React.FC<{ darkMode: boolean; toggleDarkMode: () => void }> = 
                 </ProtectedRoute>
               }
             />
+
+<Route
+  path="/admin/report/:reportId"
+  element={
+    <ProtectedRoute>
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
+/>
           </Routes>
         </main>
         {showNavbar}

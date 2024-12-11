@@ -1,22 +1,30 @@
 import axios from 'axios';
+import { io } from 'socket.io-client';
+import { fetchPostDetail } from '../services/postService';
+
+const socket = io('http://localhost:5000');
 
 const useAddcmt = () => {
-  const handleAddComment = async (postId: string, content: string, image?: File | null) => {
+  const handleAddComment = async (
+    postId: string, 
+    content: string, 
+    username: string, 
+    userId: string, 
+    avatar: string, 
+    setComments: React.Dispatch<React.SetStateAction<any[]>>
+  ) => {
     if (!content.trim()) {
       throw new Error("Comment content cannot be empty");
     }
 
     try {
-      const commentData = {
-        content,
-        image: image ? await toBase64(image) : undefined, // Convert image to base64 if provided
-      };
-
+      const commentData = { content };
       const token = localStorage.getItem('accessToken');
       if (!token) {
         throw new Error("No access token found. Please log in.");
       }
 
+      // Gửi yêu cầu thêm bình luận đến API
       const response = await axios.post(
         `http://localhost:5000/api/posts/${postId}/comment`,
         commentData,
@@ -26,11 +34,26 @@ const useAddcmt = () => {
             Authorization: `Bearer ${token}`,
           },
         }
-      ); 
+      );
 
       console.log('Comment added:', response.data);
-      window.location.reload();
-      return response.data; // Return the new comment for further use if needed
+
+      const fetchedPost = await fetchPostDetail(postId); // Lấy lại dữ liệu bài viết
+      setComments(fetchedPost.comments || []);
+      // Cập nhật bình luận mới vào state
+      setComments((prevComments) => [...prevComments, response.data]);
+
+      // Gửi thông báo đến server qua socket
+      const notificationData = {
+        postId,
+        type: 'comment',
+        username,
+        avatar,
+        userId,
+      };
+      socket.emit('sendNotification', notificationData);
+
+      return response.data;
     } catch (err) {
       console.error('Error adding comment:', err);
       if (axios.isAxiosError(err)) {
@@ -51,14 +74,5 @@ const useAddcmt = () => {
   return { handleAddComment };
 };
 
-export default useAddcmt;
 
-// Helper function to convert image file to base64
-const toBase64 = (file: File) => {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-};
+export default useAddcmt;

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
-import { Socket } from "socket.io-client"; // Import type Socket để khai báo
+import { Socket } from "socket.io-client"; 
 
 interface UseLikeProps {
-  socket: Socket | null; // socket nhận từ useSocket
+  socket: Socket | null; 
 }
 
 const useLike = ({ socket }: UseLikeProps) => {
@@ -39,24 +39,25 @@ const useLike = ({ socket }: UseLikeProps) => {
         )
       );
 
-      // Lấy username từ userId
       const userResponse = await axios.get(`http://localhost:5000/api/auth/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       
-      const username = userResponse.data.username; // Giả sử API trả về { username: '...' }
+      const username = userResponse.data.username;
+      const avatar = userResponse.data.avatar;
 
       // Phát sự kiện "like" hoặc "unlike" qua socket để server phát thông báo
       if (socket) {
         socket.emit("sendNotification", {
-          userId,    // ID của người dùng đã like/unlike
-          username,  // Tên người dùng
-          postId,    // ID bài viết được like/unlike
-          type: isLiked ? "unlike" : "like" // Loại thông báo
+          userId,   
+          username, 
+          avatar, 
+          postId,    
+          type: isLiked ? "unlike" : "like" 
         });
-      }
+      } 
 
     } catch (err) {
       console.error("Error liking/unliking post:", err);

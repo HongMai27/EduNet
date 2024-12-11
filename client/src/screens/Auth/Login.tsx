@@ -14,30 +14,25 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const { setUserId } = useAuth();
+  const { setUserId, setAvatar, setUsername } = useAuth();
 
-  // Hàm xử lý login
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // Gọi API login để lấy token và userId
       const { token, userId } = await login(email, password);
-      
-      // Lưu userId vào AuthContext
       setUserId(userId);
       
-      // Cập nhật trạng thái người dùng
       await updateUserStatus(true);
 
-      // Gọi API để lấy thông tin người dùng và role
       const response = await axios.get(`http://localhost:5000/api/auth/userinfor/${userId}`);
-      const { role } = response.data;  // Lấy role từ API
+      const { role, avatar, username } = response.data;  
+      setAvatar(avatar);
+      setUsername(username);
 
-      // Điều hướng tùy vào role
       if (role === 'admin') {
-        navigate('/admin');  // Nếu là admin thì chuyển đến trang admin
+        navigate('/admin');  
       } else {
-        navigate('/home');  // Nếu là user thì chuyển đến trang home
+        navigate('/home');  
       }
     } catch (err) {
       setError((err as Error).message);
@@ -49,9 +44,13 @@ const Login: React.FC = () => {
     const token = credentialResponse.credential;
 
     try {
-      const { accessToken, userId, username } = await googleLogin(token);  
+      const { accessToken, userId} = await googleLogin(token);  
       setUserId(userId);
       await updateUserStatus(true); 
+      const response = await axios.get(`http://localhost:5000/api/auth/userinfor/${userId}`);
+      const {avatar, username } = response.data;  
+      setAvatar(avatar);
+      setUsername(username);
       navigate('/home');
     } catch (err) {
       setError((err as Error).message);

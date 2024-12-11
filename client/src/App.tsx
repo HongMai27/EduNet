@@ -31,7 +31,9 @@ const App: React.FC = () => {
     }
   };
 
-  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID as string; 
+  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  console.log(process.env.REACT_APP_GOOGLE_CLIENT_ID);
+
   if (!clientId) {
     throw new Error("Missing environment variable: REACT_APP_GOOGLE_CLIENT_ID");
   }

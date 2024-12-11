@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { INotification } from '../../types/INotification';
 import useFormattedTimestamp from '../../hooks/useFormatTimestamp';
+import { useNavigate } from 'react-router-dom';
 
 interface NotificationModalProps {
   notifications: INotification[];
@@ -16,6 +17,24 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   notificationsRef,
 }) => {
   const { formatTimestamp } = useFormattedTimestamp();
+  const navigate = useNavigate(); 
+
+  // Close the modal when clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose, notificationsRef]);
 
   if (!isOpen) return null;
 
@@ -23,6 +42,13 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
     notifications?.sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ) || [];
+
+  const handleNotificationClick = (postId: string | undefined) => {
+    if (postId) {
+      navigate(`/detail/${postId}`);
+      onClose();
+    }
+  };
 
   return (
     <div
@@ -35,33 +61,36 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       ) : sortedNotifications.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No notifications</p>
       ) : (
-        <ul>
-          {sortedNotifications.map((notification, index) => (
-            <li key={index} className="py-2 border-b flex items-start">
-              <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                <img
-                  src={notification.userId?.avatar || '/default-avatar.png'}
-                  alt={notification.userId?.username || 'User'}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  {notification.message}
-                </p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {notification.userId?.username || 'Unknown'}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {formatTimestamp(notification.timestamp)}
-                  </p>
+        <div className="max-h-[16rem] overflow-y-auto">
+          <ul>
+            {sortedNotifications.slice(0, 4).map((notification, index) => (
+              <li
+                key={index}
+                className="py-2 border-b flex items-start cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => handleNotificationClick(notification.postId?.toString())}
+              >
+                <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+                  <img
+                    src={notification.avatar}
+                    alt={notification.username}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {notification.message}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-xs text-gray-400">
+                      {formatTimestamp(notification.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       <button
         className="mt-4 w-full bg-blue-500 text-white rounded-lg py-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
