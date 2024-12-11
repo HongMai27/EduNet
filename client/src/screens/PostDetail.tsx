@@ -9,29 +9,36 @@ import { deleteComment, editComment, fetchPostDetail } from "../services/postSer
 import DropdownMenuButton from "../components/Forms/DropdownMenu";
 import { toast } from "react-toastify";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { useAuth } from "../stores/AuthContext";
+import { useUser } from "../hooks/useUserInfor";
+import DeleteConfirmationModal from "../components/Modals/DeleteModal";
 
-const PostDetail = () => {
+const PostDetail: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
   const { handleLike } = useLikeForPost();
+  const {userId} = useAuth();
+  const { user } = useUser(userId);
   const { handleAddComment } = useAddcmt();
   const [showDeleteModal, setShowDeleteModal] = useState(false); 
-  const [editingComment, setEditingComment] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState("");
   const [showEditModal, setShowEditModal] = useState(false); 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null); 
   const [editContent, setEditContent] = useState<string>('');
-
-
+  const [comments, setComments] = useState<any[]>([]); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  
   useEffect(() => {
     const fetchDetail = async () => {
       if (postId) {
         try {
           const fetchedPost = await fetchPostDetail(postId);
           setPost(fetchedPost);
+          setComments(fetchedPost.comments || []);
           setError(null);
         } catch {
           setError("Failed to fetch post detail");
@@ -47,20 +54,33 @@ const PostDetail = () => {
     fetchDetail();
   }, [postId]);
 
+  const openFullscreen = (type: 'image' | 'video', url: string) => {
+    setMediaType(type);
+    setMediaUrl(url);
+    setIsModalOpen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsModalOpen(false);
+    setMediaUrl(null);
+    setMediaType(null);
+  };
+
   //delete comment
   const handleConfirmDeleteComment = async (postId: string, commentId: string) => {
     try {
       await deleteComment(postId, commentId); 
       toast.success('Comment deleted successfully');
-  
-      setTimeout(() => {
-        window.location.reload(); 
-      }, 1000);
+
     } catch (err) {
       toast.error('Failed to delete comment: ' + (err as Error).message);
     } finally {
       setShowDeleteModal(false); 
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
   };
 
   //edit comment
@@ -111,11 +131,31 @@ const PostDetail = () => {
         <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
           {post.content}
         </p>
-        {post.image && (
+        {post.image && ( 
           <div className="mb-4 flex justify-center">
             <img src={post.image} alt="Post" />
           </div>
         )}
+        {post.video && (
+            <div className="mb-4 flex justify-center">
+              <video
+                controls
+                className="rounded-lg w-full h-auto max-w-5xl object-cover"
+                onClick={() => openFullscreen('video', post.video!)}
+              >
+                <source src={post.video} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
+
+          {post.doc && (post.doc.endsWith(".pdf") || post.doc.endsWith(".doc") || post.doc.endsWith(".docx")) && (
+            <div className="mb-4 flex justify-center">
+              <a href={post.doc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                View Document
+              </a>
+            </div>
+          )}
         <PostActions
           postId={post._id}
           likes={post.likes || []}
@@ -162,7 +202,7 @@ const PostDetail = () => {
                         <FaEdit size={18} />
                       </button>
                       <button
-                        onClick={() => setShowDeleteModal(true)}
+                        onClick={() => setShowDeleteModal(true)} 
                         className="text-red-600 hover:text-red-800"
                       >
                         <FaTrash size={18} />
@@ -174,26 +214,12 @@ const PostDetail = () => {
 
             {/* modal delete comment */}
             {showDeleteModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white p-6 rounded-lg shadow-lg">
-                  <p className="mb-4">Are you sure you want to delete this comment?</p>
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => handleConfirmDeleteComment(post._id, comment._id)}
-                      className="bg-red-600 text-white px-4 py-2 rounded"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={() => setShowDeleteModal(false)}
-                      className="bg-gray-300 px-4 py-2 rounded"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-              )}
+        <DeleteConfirmationModal
+          onConfirm={() => handleConfirmDeleteComment(post._id, comment._id)} 
+          onCancel={handleCancelDelete}  
+        />
+      )}
+
 
             {/* Modal edit */}
             {showEditModal && (

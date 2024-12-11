@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { IUser } from '../types/IUser';
 import { fetchFollow, fetchFriends } from '../services/userService'; 
 import useFormattedTimestamp from '../hooks/useFormatTimestamp';
+import { useChat } from '../stores/ChatMiniContext';
+import ChatMini from '../components/Forms/ChatMini';
 
 const FriendPage: React.FC = () => {
     const [friends, setFriends] = useState<IUser[]>([]); 
@@ -10,6 +12,8 @@ const FriendPage: React.FC = () => {
     const [followers, setFollowers] = useState<IUser[]>([]); 
     const [error, setError] = useState<string | null>(null);
     const { formatTimestamp } = useFormattedTimestamp();
+    const { openChat, closeChat, receiverId, isOpen } = useChat(); 
+
 
     //load friends
   useEffect(() => {
@@ -118,6 +122,14 @@ const FriendPage: React.FC = () => {
                     </ul>
                 </div>
             </div>
+            {/* Chat Mini Component - will be rendered through context */}
+      {isOpen && receiverId && (
+        <ChatMini 
+          receiverId={receiverId} 
+          isOpen={isOpen} 
+          onClose={closeChat} 
+        />
+      )}
         </div>
     );
 };
