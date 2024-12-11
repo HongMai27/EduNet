@@ -113,8 +113,6 @@ const Profile: React.FC = () => {
       if (context) {
         // draw img fr video to canvas
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        
-        //  canvas to blob and upload
         canvas.toBlob(async (blob) => {
           if (blob) {
             const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
@@ -151,7 +149,6 @@ const Profile: React.FC = () => {
       }
     }
   };
-  
   
 
   // Start camera stream
@@ -202,51 +199,23 @@ const Profile: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 mt-20 dark:bg-gray-800">
-        <main className="flex-1 bg-white dark:bg-gray-800 dark:text-gray-100 ">
-          <div className="grid grid-cols-10 gap-6">
-            <div className="col-span-3 p-4 border border-gray-300 dark:border-gray-700 rounded-lg h-[calc(100vh-160px)] self-start bg-white dark:bg-gray-800 flex flex-col items-center justify-between">
-              
-              <div 
-                className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full mb-2 cursor-pointer relative mt-24" 
-                onClick={() => setAvatarModalOpen(true)}
-              >
-                <img src={isImageUploaded || user?.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
-              </div>
+       <main className="flex-1 bg-white dark:bg-gray-800 dark:text-gray-100 ">
+        <div className="grid grid-cols-10 gap-6">
+          <div className="col-span-3 p-4 border border-gray-300 dark:border-gray-700 rounded-lg h-[calc(100vh-160px)] self-start bg-white dark:bg-gray-800 flex flex-col items-center justify-between relative">
+            {/* Cover Image */}
+            <div 
+            className="w-full h-36 bg-cover bg-center rounded-t-lg" 
+            style={{ backgroundImage: `url('https://png.pngtree.com/thumb_back/fh260/background/20210115/pngtree-blue-gradient-web-ui-background-image_518658.jpg')`,}}
+            >
+            </div>              
+            <div 
+              className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer relative -mt-14 border-4 border-white"
+              onClick={() => setAvatarModalOpen(true)}
+            >
+              <img src={isImageUploaded || user?.avatar} alt="User Avatar" className="w-full h-full rounded-full object-cover" />
+            </div>
 
-              {/* Avatar Modal */}
-              <Modal isVisible={avatarModalOpen} onClose={() => setAvatarModalOpen(false)}>
-                <h3 className="text-lg font-semibold mb-4 text-center">Choose an action</h3>
-                <div className="flex space-x-2 mb-4">
-                  <button onClick={() => handleAvatarChange('view')} className="flex-1 p-2 text-blue-500 border border-gray-300 rounded-md hover:bg-gray-100">View avatar</button>
-                  <button onClick={() => handleAvatarChange('take')} className="flex-1 p-2 text-blue-500 border border-gray-300 rounded-md hover:bg-gray-100">Take photo</button>
-                  <button onClick={() => handleAvatarChange('upload')} className="flex-1 p-2 text-blue-500 border border-gray-300 rounded-md hover:bg-gray-100">Upload image</button>
-                </div>
-              </Modal>
-
-              {/* Camera */}
-              {isCameraOpen && (
-                <div 
-                  className="relative flex justify-center items-center flex-col" 
-                  onClick={stopCamera} // Khi click ra ngoài, đóng camera
-                  style={{ position: 'relative', height: 'auto' }}
-                >
-                  <video ref={videoRef} width="100%"  />
-                  <canvas ref={canvasRef} style={{ display: 'none' }} width="460" height="380" />
-                  
-                  {/* Nút chụp biểu tượng FaCamera nằm trong video */}
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation(); // Ngừng sự kiện bubble để không đóng camera khi nhấn vào nút
-                      handleTakePhoto();
-                    }} 
-                    className="absolute bottom-5 p-3 bg-green-500 text-white rounded-full hover:bg-green-600"
-                    style={{ transform: 'translateX(-50%)', left: '50%' }}
-                  >
-                    <FaCamera size={30} />
-                  </button>
-                </div>
-              )}
-
+             
               {/* Profile Info */}
               <div className="flex flex-col items-center mb-4">
                 <h1 className="text-3xl font-bold text-center">{user?.username}</h1>
@@ -295,6 +264,7 @@ const Profile: React.FC = () => {
           </div>
         </main>
 
+      {/* edit profile modal */}
       <EditProfileModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
@@ -308,11 +278,44 @@ const Profile: React.FC = () => {
         onSave={handleEditProfile}
       />
 
-      {isFullscreenModalOpen && mediaUrl && (
-        <FullscreenModal isOpen={isFullscreenModalOpen} onClose={() => setIsFullscreenModalOpen(false)}>
-          <img src={mediaUrl} alt="Avatar Fullscreen" className="w-full h-auto max-h-screen object-contain rounded-lg" />
-        </FullscreenModal>
-      )}
+      {/* Avatar Modal */}
+      <Modal isVisible={avatarModalOpen} onClose={() => setAvatarModalOpen(false)}>
+        <h3 className="text-lg font-semibold mb-4 text-center">Choose an action</h3>
+          <div className="flex space-x-2 mb-4">
+            <button onClick={() => handleAvatarChange('view')} className="flex-1 p-2 text-blue-500 border border-gray-300 rounded-md hover:bg-gray-100">View avatar</button>
+            <button onClick={() => handleAvatarChange('take')} className="flex-1 p-2 text-blue-500 border border-gray-300 rounded-md hover:bg-gray-100">Take photo</button>
+            <button onClick={() => handleAvatarChange('upload')} className="flex-1 p-2 text-blue-500 border border-gray-300 rounded-md hover:bg-gray-100">Upload image</button>
+          </div>
+      </Modal>
+
+      {/* Camera */}
+        {isCameraOpen && (
+          <div 
+            className="relative flex justify-center items-center flex-col" 
+            onClick={stopCamera} 
+            style={{ position: 'relative', height: 'auto' }}
+          >
+            <video ref={videoRef} width="100%"  />
+            <canvas ref={canvasRef} style={{ display: 'none' }} width="460" height="380" />
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation(); 
+                  handleTakePhoto();
+                }} 
+                  className="absolute bottom-5 p-3 bg-green-500 text-white rounded-full hover:bg-green-600"
+                  style={{ transform: 'translateX(-50%)', left: '50%' }}
+              >
+                <FaCamera size={30} />
+              </button>
+            </div>
+          )}
+
+        {/* fullscreen */}
+        {isFullscreenModalOpen && mediaUrl && (
+          <FullscreenModal isOpen={isFullscreenModalOpen} onClose={() => setIsFullscreenModalOpen(false)}>
+            <img src={mediaUrl} alt="Avatar Fullscreen" className="w-full h-auto max-h-screen object-contain rounded-lg" />
+          </FullscreenModal>
+        )}
     </div>
   );
 };
