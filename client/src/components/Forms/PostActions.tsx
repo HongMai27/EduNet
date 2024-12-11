@@ -3,18 +3,27 @@ import { FaComment, FaShare, FaThumbsUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../Modals/CreatePostModal';
 import LikeListForm from './LikeListForm';
+import { useAuth } from '../../stores/AuthContext';
 
 interface PostActionsProps {
   postId: string;
   likes: string[];
   onLike: (postId: string, isLiked: boolean) => void;
-  onAddComment: (postId: string, content: string) => Promise<void>; 
+  onAddComment: (
+    postId: string, 
+    content: string, 
+    username:string, 
+    userId:string, 
+    avatar: string, 
+    setComments: React.Dispatch<React.SetStateAction<any[]>>) => Promise<void>; 
 }
 
 
 const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddComment }) => {
   const isLiked = likes.includes(localStorage.getItem('userId') || '');
+  const {userId, username, avatar} = useAuth();
   const [commentContent, setCommentContent] = useState(''); 
+  const [comments, setComments] = useState<any[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
 
@@ -26,11 +35,14 @@ const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddC
   };
 
   const handleCommentSubmit = () => {
-    if (commentContent.trim()) { 
-      onAddComment(postId, commentContent); 
+    if (commentContent.trim() && userId && username && avatar) { 
+      onAddComment(postId, commentContent, username, userId, avatar, setComments);
       setCommentContent(''); 
-    } 
+    } else {
+      console.error('User information is incomplete.');
+    }
   };
+  
 
   return (
     <div className="flex flex-col space-y-2">
@@ -90,7 +102,7 @@ const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddC
           className="bg-blue-500 text-white rounded-md px-4 py-1 ml-2"
           onClick={handleCommentSubmit}
         >
-          Add
+          Comment
         </button>
       </div>
 

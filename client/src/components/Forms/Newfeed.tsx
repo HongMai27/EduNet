@@ -11,8 +11,20 @@ interface NewsFeedProps {
   posts: IPost[];
   handleRedirect: (postId: string) => void;
   handleRedirectToProfile: (userId: string) => void;
-  handleLike: (postId: string, isLiked: boolean, setPosts: React.Dispatch<React.SetStateAction<IPost[]>>, userId: string) => void;
-  handleAddComment: (postId: string, content: string) => Promise<void>;
+  handleLike: (
+    postId: string, 
+    isLiked: boolean, 
+    setPosts: React.Dispatch<React.SetStateAction<IPost[]>>, 
+    userId: string
+  ) => void;
+  handleAddComment: (
+    postId: string, 
+    content: string, 
+    userId: string, 
+    username:string, 
+    avatar:string,
+    setComments: React.Dispatch<React.SetStateAction<any[]>>
+  ) => Promise<void>;
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   userId: string;
   socket: Socket | null;
