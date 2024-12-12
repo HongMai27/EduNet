@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
 import Group from "../models/groupModel";
+import path from "path";
 
 interface AuthRequest extends Request {
     userId?: string;
@@ -14,7 +15,6 @@ interface AuthRequest extends Request {
     const date = new Date();
   
     try {
-      // Kiểm tra tên nhóm
       if (!name || typeof name !== "string") {
         console.log("Create group: Name is required and must be a valid string.");
         return res.status(400).json({ msg: "Group name is required and must be a valid string." });
@@ -25,7 +25,6 @@ interface AuthRequest extends Request {
         return res.status(400).json({ msg: "Description must be a valid string." });
       }
   
-      // Kiểm tra thành viên có hợp lệ không
       if (members && members.length > 0) {
         const validMembers = await User.find({ _id: { $in: members } });
         if (validMembers.length !== members.length) {
@@ -35,7 +34,7 @@ interface AuthRequest extends Request {
   
       const groupMembers = members ? members : [userId]; 
   
-      // Tạo nhóm mới
+      // Tạo nhóm 
       const group = new Group({
         name,
         description: description || "", 
@@ -50,7 +49,6 @@ interface AuthRequest extends Request {
   
       await User.findByIdAndUpdate(userId, { $push: { groups: group._id } }, { new: true });
   
-      // Trả về nhóm vừa tạo
       console.log("Group created successfully");
       res.status(201).json(group);
     } catch (err) {
@@ -64,7 +62,7 @@ interface AuthRequest extends Request {
     }
   };
 
-  //get gr
+  //get all gr
   export const getGroups = async (req: Request, res: Response) => {
     try {
       const groups = await Group.find()
@@ -86,3 +84,46 @@ interface AuthRequest extends Request {
       }
     }
   };
+
+  //get group detail by id
+  export const getGroupDetails = async (req: Request, res: Response) => {
+    const groupId = req.params.id;  
+  
+    try {
+      const group = await Group.findById(groupId)
+        .populate("admin", "username avatar")  
+        .populate("members", "username avatar") 
+        .populate({
+          path: "post", 
+          select: "content date user tag image video",  
+          populate: [{
+            path: "user", 
+            select: "username avatar",  
+          },
+          {
+            path: "tag",
+            select: "tagname"
+          }],
+          options: { sort: { date: -1 } }, 
+        })
+        .exec();
+  
+      if (!group) {
+        return res.status(404).json({ msg: "Group not found" });
+      }
+  
+      res.json({
+        name: group.name,
+        description: group.description,
+        avtgr: group.avtgr,
+        createdAt: group.createdAt,
+        admin: group.admin,  
+        members: group.members,  
+        posts: group.post,  
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ msg: "Server error" });
+    }
+  };
+  
