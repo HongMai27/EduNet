@@ -6,6 +6,7 @@ import PostActions from './PostActions';
 import { Socket } from 'socket.io-client';
 import FullscreenModal from '../Modals/FullscreenModal';
 import { useNavigate } from 'react-router-dom';
+import { FaArrowRight, FaCaretRight } from 'react-icons/fa';
 
 interface NewsFeedProps {
   posts: IPost[];
@@ -77,7 +78,25 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
             </div>
 
             <div className="cursor-pointer" onClick={() => handleRedirectToProfile(post.user._id)}>
-              <h3 className="text-lg font-semibold dark:text-white">{post.user?.username}</h3>
+              <h3 className="text-lg font-semibold dark:text-white flex items-center">
+                {post.user?.username}
+                {post.group && (
+                 <span className="text-black dark:text-gray-400 mx-2">
+                 <FaCaretRight /> 
+               </span>
+                )}
+                {post.group && (
+                  <span
+                    className="text-blue-500 dark:text-blue-400 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation(); 
+                      navigate(`/group/${post.group._id}`);
+                    }}
+                  >
+                    {post.group.name}
+                  </span>
+                )}
+              </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">{formatTimestamp(post.date)}</p>
             </div>
 
@@ -141,7 +160,7 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
               <video
                 src={mediaUrl}
                 controls
-                autoPlay
+                autoPlay 
                 className="w-full h-auto max-h-screen object-contain rounded-lg"
               ></video>
             )}

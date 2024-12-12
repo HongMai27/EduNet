@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { AxiosError } from 'axios';
 import { useAuth } from '../../stores/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 
 interface LeftSidebarProps {
@@ -18,6 +19,8 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className }) => {
   const [newGroupMembers, setNewGroupMembers] = useState<string>('');  
   const [showCreateGroupForm, setShowCreateGroupForm] = useState<boolean>(false); 
   const [newGroupAvatar, setNewGroupAvatar] = useState<string>(''); 
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -92,14 +95,18 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className }) => {
     }
   };
 
-  // Tạo avatar ngẫu nhiên cho nhóm
-  const generateRandomAvatar = (index: number) => {
-    return `https://i.pravatar.cc/150?img=${index % 70}`; 
+  const generateAvatar = (name: string) => {
+    if (!name) return "";
+    return name.charAt(0).toUpperCase(); // Lấy chữ cái đầu tiên của tên nhóm
+  };
+
+  const handleGroupClick = (groupId: string) => {
+    navigate(`/group/${groupId}`);  
   };
 
   return (
     <div className={`fixed w-72 h-screen bg-white dark:bg-gray-800 p-4 mt-20 shadow-md flex flex-col ${className}`}>
-      {/* My Groups Section */}
+      {/* My Groups Section
       <h2 className="text-lg font-semibold mb-4 dark:text-white">My Groups</h2>
         {myGroups.length === 0 ? (
         <p className=" text-gray-500 dark:text-gray-400">You have no group. Let create new group! </p>
@@ -119,7 +126,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className }) => {
               </li>
             ))}
           </ul>
-      )}
+      )} */}
 
       {/* Groups Section */}
       <h2 className="text-lg font-semibold mb-4 dark:text-white">Groups</h2>
@@ -127,16 +134,25 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className }) => {
         {loading ? (
           <li className="text-center text-black dark:text-white">Loading...</li>
         ) : (
-          groups.map((group, index) => (
+          groups.map((group) => (
             <li
               key={group._id}
               className="flex items-center text-black dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded"
+              onClick={() => handleGroupClick(group._id)} 
             >
-              <img
-                src={generateRandomAvatar(index + myGroups.length)}
-                alt="group avatar"
-                className="w-8 h-8 rounded-full mr-2"
-              />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-300 dark:bg-gray-600 mr-2">
+                {group.avtgr ? (
+                  <img
+                    src={group.avtgr}
+                    alt="group avatar"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white text-lg font-bold">
+                    {generateAvatar(group.name)}  {/* Hiển thị chữ cái đầu tiên của tên nhóm */}
+                  </span>
+                )}
+              </div>
               {group.name}
             </li>
           ))

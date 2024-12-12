@@ -11,6 +11,7 @@ export interface IPost extends Document {
   user: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[];
   comments: mongoose.Schema.Types.ObjectId[];
+  group?: mongoose.Schema.Types.ObjectId;
  
 }
 
@@ -54,7 +55,12 @@ const postSchema: Schema<IPost> = new Schema({
   comments: [{
     type: Schema.Types.ObjectId,
     ref: "Comment"
-  }]
+  }],
+  group: { 
+    type: Schema.Types.ObjectId, 
+    ref: "Group",
+    default: null
+  },
   
 });
 

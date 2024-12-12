@@ -4,10 +4,11 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import { getPostLikes, likePost, unlikePost } from "../controllers/likeController";
 import { addComment, deleteComment, editComment, getComments,  } from "../controllers/commentController";
 import { addTag, getTags  } from "../controllers/tagController";
-import { createGroup, getGroups } from "../controllers/groupController";
+import { createGroup, getGroupDetails, getGroups } from "../controllers/groupController";
 import { createReport, getAllReports, getReportById, getReports } from "../controllers/reportedController";
 
 const router = Router();
+router.get('/groupdetail/:id', getGroupDetails)
 router.get("/reports", getReports);
 router.get('/reports/:id', getReportById);  
 router.get('/getallreport', getAllReports)

@@ -4,6 +4,7 @@ import User from "../models/userModel";
 import Tag from "../models/tagModel";
 import Comment from "../models/commentModel";
 import mongoose from "mongoose";
+import Group from "../models/groupModel";
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -14,6 +15,7 @@ export const getPosts = async (req: Request, res: Response) => {
     const posts = await Post.find()
       .populate("user", "username avatar")
       .populate("tag", "tagname")
+      .populate("group", "name avtgr")
       .sort({ date: -1 }); 
     res.json(posts);
   } catch (err) {
@@ -48,27 +50,37 @@ export const getPostById = async (req: Request, res: Response) => {
   }
 };
 
-// create post
 export const createPost = async (req: AuthRequest, res: Response) => {
-  const { content, image, video, doc, visibility, tag } = req.body; 
+  const { content, image, video, doc, visibility, tag, group: groupId } = req.body; 
   const userId = req.userId;
 
   const date = new Date();
   const postVisibility = visibility || "public";
 
   try {
+    // Validate tag
     if (!tag || typeof tag !== 'string') {
-      console.log('Create post: Tag is required and must be a valid string.')
+      console.log('Create post: Tag is required and must be a valid string.');
       return res.status(400).json({ msg: "Tag is required and must be a valid string." });
     }
 
     const existingTag = await Tag.findOne({ tagname: tag });
     if (!existingTag) {
-      console.log('Create post: Tag does not exist. Please select a valid tag.')
+      console.log('Create post: Tag does not exist. Please select a valid tag.');
       return res.status(400).json({ msg: "Tag does not exist. Please select a valid tag." });
     }
 
-    // Tạo post mới
+    // Validate group if groupId is provided
+    let existingGroup = null;
+    if (groupId) {
+      existingGroup = await Group.findById(groupId);
+      if (!existingGroup) {
+        console.log('Create post: Group not found.');
+        return res.status(404).json({ msg: "Group not found." });
+      }
+    }
+
+    // Create the post
     const post = new Post({
       user: userId,
       content,
@@ -76,23 +88,35 @@ export const createPost = async (req: AuthRequest, res: Response) => {
       video: video || null,   
       doc: doc || null,      
       date,
-      tag: existingTag._id,   
+      tag: existingTag._id,
       visibility: postVisibility,
+      group: existingGroup ? existingGroup._id : null, // Gán đúng groupId nếu có
     });
 
     await post.save();
 
+    // Update user posts
     await User.findByIdAndUpdate(
       userId,
       { $push: { posts: post._id } },
       { new: true }
     );
 
+    // Update tag posts
     await Tag.findByIdAndUpdate(
       existingTag._id,
       { $push: { posts: post._id } },
       { new: true }
     );
+
+    // Update group posts if applicable
+    if (existingGroup) {
+      await Group.findByIdAndUpdate(
+        existingGroup._id,
+        { $push: { post: post._id } },
+        { new: true }
+      );
+    }
 
     console.log("Posted");
     res.status(201).json(post);
@@ -106,6 +130,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
     }
   }
 };
+
 
 
 export const deletePost = async (req: AuthRequest, res: Response) => {

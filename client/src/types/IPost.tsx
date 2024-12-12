@@ -1,4 +1,5 @@
 import { IComment } from "./IComment";
+import { IGroup } from "./IGroup";
 import { ITag } from "./ITag";
 import { IUser } from "./IUser";
 
@@ -18,7 +19,8 @@ export interface IPost {
     post?: any;
     user: IUser;
     isVerified?: boolean;
-    likeCount: number
+    likeCount: number;
+    group: IGroup;
   }
   
   export interface LikeProps {

@@ -27,14 +27,15 @@ const GroupSchema: Schema = new Schema({
       type: Schema.Types.ObjectId, 
       ref: "User" 
     }],
-    post: [{ 
-        type: Schema.Types.ObjectId, 
-        ref: "Post" 
-      }],
+    post: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post", 
+      },
+    ],
     admin: { 
       type: Schema.Types.ObjectId, 
       ref: "User", 
-      required: true 
     },
     createdAt: { 
       type: String, 
