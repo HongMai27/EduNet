@@ -21,6 +21,9 @@ const SettingsPage: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [savedPosts, setSavedPosts] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
 
@@ -83,9 +86,10 @@ const SettingsPage: React.FC = () => {
     navigate(`/profiles/${userId}`); 
   };
 
-  const openFullscreen = (image: string) => {
-    setSelectedImage(image);
-    setIsModalFullscreen(true);
+  const openFullscreen = (type: 'image' | 'video', url: string) => {
+    setMediaType(type);
+    setMediaUrl(url);
+    setIsModalOpen(true);
   };
 
   const closeFullscreen = () => {
@@ -127,16 +131,39 @@ const SettingsPage: React.FC = () => {
                     {post.content}
                   </p>
                   
-                  {post.image && (
-                    <div className="mt-4">
-                      <img
-                        src={post.image}
-                        alt="Post Image"
-                        className="w-full h-48 rounded-lg object-cover"
-                        onClick={() => openFullscreen(post.image)} 
-                      />
-                    </div>
-                  )}
+                  {post.image && ( 
+          <div className="mb-4 flex justify-center">
+            <img src={post.image} alt="Post" />
+          </div>
+        )}
+        {post.video && (
+            <div className="mb-4 flex justify-center">
+              <video
+                controls
+                className="rounded-lg w-full h-auto max-w-5xl object-cover"
+                onClick={() => openFullscreen('video', post.video!)}
+              >
+                <source src={post.video} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
+
+          {post.doc && (post.doc.endsWith(".pdf") || post.doc.endsWith(".doc") || post.doc.endsWith(".docx")) && (
+            <div className="mb-4 flex justify-center">
+              <a href={post.doc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                View Document
+              </a>
+            </div>
+          )}
+
+          {post.doc && (post.doc.endsWith(".pdf") || post.doc.endsWith(".doc") || post.doc.endsWith(".docx")) && (
+            <div className="mb-4 flex justify-center">
+              <a href={post.doc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                View Document
+              </a>
+            </div>
+          )}
                 </div>
               ))
             ) : (

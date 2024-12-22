@@ -3,13 +3,14 @@ import axios from "axios";
 import useFormattedTimestamp from "../../hooks/useFormatTimestamp";
 import { FaTrash } from "react-icons/fa";
 import { IUser } from "../../types/IUser";
+import { searchUsersByUsername } from "../../services/userService";
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
-
+ 
   // Fetching user data
   useEffect(() => {
     const fetchUsers = async () => {
@@ -38,6 +39,8 @@ const UserManagement: React.FC = () => {
     fetchUsers();
   }, []);
 
+
+
   if (loading) {
     return <div className="p-6">Đang tải dữ liệu...</div>;
   }
@@ -47,50 +50,47 @@ const UserManagement: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Users List</h2>
-      <table className="table-auto border-collapse border border-gray-300 w-full">
+    <div className="mt-20 ml-64">
+      <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Users List</h2>
+      <table className="min-w-full table-auto border-collapse rounded-lg shadow-md overflow-hidden">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-4 py-2">ID</th>
-            <th className="border border-gray-300 px-4 py-2">Username</th>
-            <th className="border border-gray-300 px-4 py-2">Avatar</th>
-            <th className="border border-gray-300 px-4 py-2">Point</th>
-            <th className="border border-gray-300 px-4 py-2">Posts</th>
-            <th className="border border-gray-300 px-4 py-2">Email</th>
-            <th className="border border-gray-300 px-4 py-2">Reported</th>
-            <th className="border border-gray-300 px-4 py-2">Last active</th>
-            <th className="border border-gray-300 px-4 py-2">Delete</th>
+          <tr className="bg-gray-200 text-gray-700 text-sm">
+            <th className="px-6 py-3 text-left">Username</th>
+            <th className="px-6 py-3 text-left">Avatar</th>
+            <th className="px-6 py-3 text-left">Point</th>
+            <th className="px-6 py-3 text-left">Posts</th>
+            <th className="px-6 py-3 text-left">Email</th>
+            <th className="px-6 py-3 text-left">Reported</th>
+            <th className="px-6 py-3 text-left">Last active</th>
+            <th className="px-6 py-3 text-left">Delete</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user._id}>
-              <td className="border border-gray-300 px-4 py-2">{user._id}</td>
-              <td className="border border-gray-300 px-4 py-2">{user.username}</td>
-              <td className="border border-gray-300 px-4 py-2">
+            <tr key={user._id} className="hover:bg-gray-100 transition duration-200 ease-in-out">
+              <td className="border-b border-gray-300 px-4 py-2">{user.username}</td>
+              <td className="border-b border-gray-300 px-4 py-2">
                 <img
                   src={user.avatar}
                   alt="Avatar"
                   className="w-10 h-10 rounded-full mx-auto"
                 />
               </td>
-              <td className="border border-gray-300 px-4 py-2">{user.point || 0}</td>
-              <td className="border border-gray-300 px-4 py-2 text-center">
+              <td className="border-b border-gray-300 px-4 py-2">{user.point || 0}</td>
+              <td className="border-b border-gray-300 px-4 py-2 text-center">
                 {user.postCount}
               </td>
-              <td className="border border-gray-300 px-4 py-2">{user.email}</td>
-              <td className="border border-gray-300 px-4 py-2">
+              <td className="border-b border-gray-300 px-4 py-2">{user.email}</td>
+              <td className="border-b border-gray-300 px-4 py-2">
                 Chưa làm
               </td>
-              <td className="border border-gray-300 px-4 py-2">
+              <td className="border-b border-gray-300 px-4 py-2">
                 {user.lastActive ? formatTimestamp(user.lastActive) : "Không rõ"}
               </td>
-              <td className="border border-gray-300 px-4 py-2 text-center">
+              <td className="border-b border-gray-300 px-4 py-2 text-center">
                 <div className="flex justify-center items-center h-full">
                   <FaTrash
                     className="text-red-500 cursor-pointer hover:text-red-700"
-                    // Bạn có thể thêm hàm xử lý xóa người dùng vào đây
                   />
                 </div>
               </td>

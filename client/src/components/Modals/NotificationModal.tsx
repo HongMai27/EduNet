@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { INotification } from '../../types/INotification';
 import useFormattedTimestamp from '../../hooks/useFormatTimestamp';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 interface NotificationModalProps {
   notifications: INotification[];
@@ -43,16 +44,40 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ) || [];
 
-  const handleNotificationClick = (postId: string | undefined) => {
-    if (postId) {
-      navigate(`/detail/${postId}`);
-      onClose();
-    }
-  };
+    const handleNotificationClick = async (notificationId: string, postId: string | undefined) => {
+      try {
+        const token = localStorage.getItem('accessToken'); 
+    
+        if (!token) {
+          console.error('Token is not available');
+          return;
+        }
+    
+        await axios.put(
+          `http://localhost:5000/api/auth/notifications/${notificationId}`,
+          { isRead: true },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (postId) {
+          navigate(`/detail/${postId}`);
+        }
+      } catch (error) {
+        console.error('Failed to update notification as read:', error);
+      } finally {
+        onClose();
+      }
+    };
+    
+    
 
   return (
     <div
-      className="fixed top-20 right-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-80 p-4"
+      className="fixed top-20 right-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-80 p-1"
       ref={notificationsRef}
     >
       <h2 className="text-lg font-bold mb-2 dark:text-white">Notifications</h2>
@@ -63,12 +88,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       ) : (
         <div className="max-h-[16rem] overflow-y-auto">
           <ul>
-            {sortedNotifications.slice(0, 4).map((notification, index) => (
+            {sortedNotifications.slice(0, 20).map((notification, index) => (
               <li
                 key={index}
-                className="py-2 border-b flex items-start cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => handleNotificationClick(notification.postId?.toString())}
-              >
+                className={`py-2 border-b flex items-start cursor-pointer ${
+                  notification.isRead
+                    ? 'bg-white hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600'
+                    : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800'
+                }`}
+                onClick={() => handleNotificationClick(notification._id, notification.postId?.toString())} 
+                >
                 <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
                   <img
                     src={notification.avatar}
@@ -76,7 +105,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                     className="w-full h-full object-cover"
                   />
                 </div>
-
+  
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-white">
                     {notification.message}
@@ -100,6 +129,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       </button>
     </div>
   );
+  
 };
 
 export default NotificationModal;
