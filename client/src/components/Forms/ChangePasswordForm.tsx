@@ -51,7 +51,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSubmit, isLoa
           className="absolute right-3 top-3 cursor-pointer text-gray-500 dark:text-gray-400"
           onClick={() => setShowOldPassword(!showOldPassword)}
         >
-          {showOldPassword ? <FaEyeSlash /> : <FaEye />} {/* Hiển thị icon tùy vào trạng thái */}
+          {showOldPassword ? <FaEyeSlash /> : <FaEye />} 
         </div>
       </div>
 
@@ -85,7 +85,7 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSubmit, isLoa
           className="absolute right-3 top-3 cursor-pointer text-gray-500 dark:text-gray-400"
           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
         >
-          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />} {/* Hiển thị icon tùy vào trạng thái */}
+          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
         </div>
       </div>
 
