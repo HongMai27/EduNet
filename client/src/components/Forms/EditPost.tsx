@@ -2,21 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { editPost, fetchTags } from '../../services/postService';
 import { ITag } from '../../types/ITag';
+import { FaFileAlt, FaFileImage, FaGlobe, FaLock, FaUserFriends } from 'react-icons/fa';
 
 const EditPostModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const [visibility, setVisibility] = useState<'public' | 'friend' | 'private'>('public'); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { postId, postContent, image, tag: selectedTagId } = location.state || {};
   const [content, setContent] = useState(postContent || '');
   const [selectedImage, setSelectedImage] = useState<string | null>(image || null);
   const [selectedTag, setSelectedTag] = useState<string | null>(selectedTagId || null);
   const [availableTags, setAvailableTags] = useState<ITag[]>([]);
-  const [visibility, setVisibility] = useState('public');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [newPostImage, setNewPostImage] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  
 
   useEffect(() => {
     const loadTags = async () => {
@@ -39,6 +40,7 @@ const EditPostModal = () => {
   const handleTagToggle = (tagId: string) => {
     setSelectedTag((prev) => (prev === tagId ? null : tagId));
   };
+
 
   const handleSaveChanges = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -63,27 +65,41 @@ const EditPostModal = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setNewPostImage(file);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+
+  const handleVisibilityChange = (visibility: 'public' | 'friend' | 'private') => {
+    setVisibility(visibility);
+    setIsDropdownOpen(false); 
   };
-
   const handleCancel = () => {
-    navigate(-1); // Quay lại trang trước đó
+    navigate(-1); 
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-3xl">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold mb-4 text-black dark:text-white">Edit Post</h2>
+        <div className="relative">
+                  <button
+                    className="flex items-center text-gray-500"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  >
+                    {visibility === 'public' && <FaGlobe />}
+                    {visibility === 'friend' && <FaUserFriends />}
+                    {visibility === 'private' && <FaLock />}
+                    <span className="ml-2">{visibility.charAt(0).toUpperCase() + visibility.slice(1)}</span> {/* Hiển thị trạng thái */}
+                  </button>
+                  {/* Dropdown Menu */}
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 bg-white border rounded shadow-md z-10">
+                      <button onClick={() => handleVisibilityChange('public')} className="block px-4 py-2 hover:bg-gray-200">Public</button>
+                      <button onClick={() => handleVisibilityChange('friend')} className="block px-4 py-2 hover:bg-gray-200">Friends</button>
+                      <button onClick={() => handleVisibilityChange('private')} className="block px-4 py-2 hover:bg-gray-200">Private</button>
+                    </div>
+                  )}
+                </div>
+                </div>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={handleSaveChanges}>
           <textarea
@@ -113,34 +129,12 @@ const EditPostModal = () => {
             )}
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-2 text-sm text-black dark:text-white">Choose an image (optional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              className="mb-4 text-black dark:text-white"
-              onChange={handleImageChange}
-              ref={fileInputRef}
-            />
-          </div>
-
           {selectedImage && (
             <div className="mb-4 flex justify-center">
               <img src={selectedImage} alt="Post" className="w-32 h-auto rounded-lg" />
             </div>
           )}
 
-          <div className="mb-4">
-            <label className="block mb-2 text-sm text-black dark:text-white">Visibility</label>
-            <select
-              value={visibility}
-              onChange={(e) => setVisibility(e.target.value)}
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-gray-900 text-black dark:text-white"
-            >
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-            </select>
-          </div>
 
           <div className="flex justify-between">
             <button
