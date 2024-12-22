@@ -4,20 +4,22 @@ import { ITag } from '../../types/ITag';
 import { IPost } from '../../types/IPost';
 import { fetchTags } from '../../services/postService';
 import { FaFileAlt, FaFileImage, FaLock, FaGlobe, FaUserFriends } from 'react-icons/fa'; // Import các icon
+import { useParams } from 'react-router-dom';
 
 interface PostFormProps {
   onPostCreated: (post: IPost) => void;
 }
 
 const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
+  const { groupId } = useParams(); 
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostImageOrVideo, setNewPostImageOrVideo] = useState<File | null>(null);
   const [newPostFile, setNewPostFile] = useState<File | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [availableTags, setAvailableTags] = useState<ITag[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [visibility, setVisibility] = useState<'public' | 'friend' | 'private'>('public'); // Trạng thái cho visibility
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Trạng thái mở dropdown
+  const [visibility, setVisibility] = useState<'public' | 'friend' | 'private'>('public'); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const imageVideoInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -60,7 +62,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
 
   const handleVisibilityChange = (visibility: 'public' | 'friend' | 'private') => {
     setVisibility(visibility);
-    setIsDropdownOpen(false); // Đóng dropdown sau khi chọn
+    setIsDropdownOpen(false);
   };
 
   const uploadFile = async (file: File, fileType: 'imageOrVideo' | 'document') => {
@@ -120,6 +122,7 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
         image: imageUrl, 
         video: videoUrl,  
         doc: docUrl,
+        group: groupId,
         visibility 
       };
 
@@ -190,7 +193,6 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
           onChange={handleContentChange}
         ></textarea>
 
-        {/* Choose Image/Video and File inputs on the same row */}
         <div className="flex items-center gap-4 mb-4">
           {/* Image/Video Upload */}
           <label className="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600">
@@ -235,7 +237,6 @@ const PostForm: React.FC<PostFormProps> = ({ onPostCreated }) => {
                 className="w-32 h-32 rounded-lg"
               />
             ) : (
-              // Display file icon and name for other file types
               <div className="flex items-center gap-2">
                 <FaFileAlt className="text-gray-500" />
                 <span>{newPostFile?.name}</span>

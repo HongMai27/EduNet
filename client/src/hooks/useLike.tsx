@@ -15,6 +15,10 @@ const useLike = ({ socket }: UseLikeProps) => {
     setPosts: React.Dispatch<React.SetStateAction<any[]>>,
     userId: string
   ) => {
+    if (!userId) {
+      console.error("User is not logged in");
+      return;
+    }
     try {
       const token = localStorage.getItem("accessToken");
       const url = isLiked
@@ -60,8 +64,16 @@ const useLike = ({ socket }: UseLikeProps) => {
       } 
 
     } catch (err) {
-      console.error("Error liking/unliking post:", err);
-      setError("Failed to like/unlike post");
+      if (axios.isAxiosError(err)) {
+        console.error("Axios error:", err.response?.data || err.message);
+        setError(`Failed to like/unlike post: ${err.response?.data?.msg || err.message}`);
+      } else if (err instanceof Error) {
+        console.error("General error:", err.message);
+        setError(`Failed to like/unlike post: ${err.message}`);
+      } else {
+        console.error("Unknown error:", err);
+        setError("An unknown error occurred while liking/unliking post.");
+      }
     }
   };
 

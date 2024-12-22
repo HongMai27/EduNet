@@ -10,4 +10,5 @@ export interface INotification{
     username: string;
     avatar: string;
     postId: IPost;
+    isRead: boolean;
 }

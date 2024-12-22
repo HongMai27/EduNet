@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuth } from "../../stores/AuthContext";
 import { io } from "socket.io-client";
 import { IMessage } from "../../types/IMessage";
+import { FaPaperPlane } from "react-icons/fa";
 
 const ChatModal: React.FC<{ receiverId: string; onClose: () => void }> = ({ receiverId, onClose }) => {
   const { userId } = useAuth();
@@ -11,6 +12,7 @@ const ChatModal: React.FC<{ receiverId: string; onClose: () => void }> = ({ rece
   const [content, setContent] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null); 
   const token = localStorage.getItem('accessToken');
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [receiverInfo, setReceiverInfo] = useState<{ avatar: string; username: string } | null>(null);
   const socket = useRef<any>(null);
@@ -170,8 +172,12 @@ const ChatModal: React.FC<{ receiverId: string; onClose: () => void }> = ({ rece
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <button onClick={handleSendMessage} className="ml-2 bg-blue-500 text-white p-1 rounded">
-          Send
+         <button
+          onClick={handleSendMessage}
+          className="ml-2 bg-blue-500 text-white p-1 rounded"
+          disabled={loading}
+        >
+          {loading ? "Sending..." : <FaPaperPlane />}
         </button>
       </div>
     </div>

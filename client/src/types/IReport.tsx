@@ -13,4 +13,5 @@ export interface IReport {
     entityType: "Post" | "User";
     reason: string;
     createdAt: string;
+    status: string;
   }

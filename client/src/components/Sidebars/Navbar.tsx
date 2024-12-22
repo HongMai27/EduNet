@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaHome, FaBell, FaEnvelope, FaSearch, FaSun, FaMoon, FaUserCheck, FaUserGraduate, FaUsers, FaIdBadge } from "react-icons/fa";
+import { FaHome, FaBell, FaEnvelope, FaSearch, FaSun, FaMoon, FaUserCheck, FaUserGraduate, FaIdBadge } from "react-icons/fa";
 import useSocket from "../../hooks/useSocket";
 import NotificationModal from "../Modals/NotificationModal";
 import SearchResultsModal from "../Modals/ResultSearchModal";
@@ -10,7 +10,6 @@ import { INotification } from "../../types/INotification";
 import axios from "axios";
 import LogoImage from '../../image/logo.png'
 import { useAuth } from "../../stores/AuthContext";
-import ChatModal from "../Modals/ChatMini";
 import ChatBot from "../Modals/ChatBot";
 
 interface NavbarProps {
@@ -205,14 +204,25 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
         {/* Notifications Section */}
         <div className="group relative flex items-center">
           <button
-            ref={bellRef} 
+            ref={bellRef}
             onClick={openModal}
-            className="text-blue-600 dark:text-gray-300"
+            className="text-blue-600 dark:text-gray-300 relative"
           >
             <FaBell size={28} />
+            {/* Badge */}
+            {notifications.filter(notification => !notification.isRead).length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {
+                  notifications.filter(notification => !notification.isRead).length > 99 
+                    ? "99+" 
+                    : notifications.filter(notification => !notification.isRead).length
+                }
+              </span>
+            )}
           </button>
           <span className="tooltip-text group-hover:opacity-100">Notification</span>
         </div>
+
 
         {/* Notification Modal */}
         {isModalOpen && (
@@ -287,9 +297,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDarkMode, darkMode }) => {
           )}
         </div>
 
+        {/* management group */}
         <div className="group relative flex items-center">
           <Link
-            to="/groups"
+            to="/mygroup"
             className={`text-blue-600 dark:text-gray-300 group-hover:scale-150 transition-transform duration-150 ease-in-out ${currentPath === '/groups' ? 'border-b-2 border-blue-600' : ''}`}
           >
             <FaIdBadge size={28} /> 

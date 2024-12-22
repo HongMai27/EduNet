@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const updateUserStatus = async (isOnline: boolean) => {
-    console.log("Calling updateUserStatus with isOnline =", isOnline); // Debugging line
+    console.log("Calling updateUserStatus with isOnline =", isOnline); 
     try {
       const response = await axios.put(
         'http://localhost:5000/api/auth/update-status',

@@ -16,10 +16,8 @@ const useFormattedTimestamp = () => {
       return `${hoursAgo} hours`;
     } else if (daysAgo === 1) {
       return "Yesterday";
-    } else if (daysAgo < 30) {
-      return `${daysAgo} day ago`;
     } else {
-      return format(date, "dd/MM/yyyy", { locale: vi });
+      return `${daysAgo} day ago`;
     }
   };
 

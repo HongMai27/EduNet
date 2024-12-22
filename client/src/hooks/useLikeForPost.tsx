@@ -24,6 +24,8 @@ const useLikeForPost = () => {
           ? { ...prevPost, likes: updatedLikes }
           : prevPost
       );
+
+      
     } catch (err) {
       console.error("Error liking/unliking post:", err);
       setError("Failed to like/unlike post");

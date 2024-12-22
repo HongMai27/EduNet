@@ -149,7 +149,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ className }) => {
                   />
                 ) : (
                   <span className="text-white text-lg font-bold">
-                    {generateAvatar(group.name)}  {/* Hiển thị chữ cái đầu tiên của tên nhóm */}
+                    {generateAvatar(group.name)} 
                   </span>
                 )}
               </div>

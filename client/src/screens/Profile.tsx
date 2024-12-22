@@ -41,7 +41,7 @@ const Profile: React.FC = () => {
         setLoading(false);
         return;
       }
-
+ 
       try {
         const userData = await fetchUserById(userId);
         setUser(userData);
@@ -61,7 +61,9 @@ const Profile: React.FC = () => {
     fetchUser();
   }, [userId]);
 
-
+  const handleDeletePost = (postId: string) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+  };
 
   // Handle avatar change (view, upload, or take)
   const handleAvatarChange = (type: string) => {
@@ -250,6 +252,7 @@ const Profile: React.FC = () => {
                   setPosts={setPosts}
                   userId={userId!}
                   socket={socket}
+                  onDeletePost={handleDeletePost}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-center space-y-4">

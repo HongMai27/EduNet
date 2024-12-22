@@ -49,6 +49,10 @@ const OtherProfile: React.FC = () => {
     fetchUser();
   }, [userId]);
 
+  const handleDeletePost = (postId: string) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+  };
+
   const handleMessageClick = (friendId: string) => {
     openChat(friendId); // Mở chat với ID bạn bè đã chọn
   };
@@ -127,6 +131,7 @@ const OtherProfile: React.FC = () => {
                   setPosts={setPosts}
                   userId={userId!}
                   socket={socket}
+                  onDeletePost={handleDeletePost}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-center space-y-4">

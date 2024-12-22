@@ -5,8 +5,9 @@ import Button from '../../components/Forms/Button';
 import { GoogleLogin } from '@react-oauth/google'; 
 import { updateUserStatus } from '../../hooks/updateStatus';
 import { googleLogin, login } from '../../services/authService';
-import axios from 'axios';
 import LogoImage from '../../image/logo.png'
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { fetchUserInfo } from '../../services/userService';
 
 
 const Login: React.FC = () => {
@@ -14,6 +15,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
   const { setUserId, setAvatar, setUsername } = useAuth();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -24,8 +26,9 @@ const Login: React.FC = () => {
       
       await updateUserStatus(true);
 
-      const response = await axios.get(`http://localhost:5000/api/auth/userinfor/${userId}`);
-      const { role, avatar, username } = response.data;  
+      const { role, avatar, username } = await fetchUserInfo(userId);    
+      localStorage.setItem('avatar', avatar);
+      localStorage.setItem('username', username);
       setAvatar(avatar);
       setUsername(username);
 
@@ -47,8 +50,9 @@ const Login: React.FC = () => {
       const { accessToken, userId} = await googleLogin(token);  
       setUserId(userId);
       await updateUserStatus(true); 
-      const response = await axios.get(`http://localhost:5000/api/auth/userinfor/${userId}`);
-      const {avatar, username } = response.data;  
+      const { role, avatar, username } = await fetchUserInfo(userId);
+      localStorage.setItem('avatar', avatar);
+      localStorage.setItem('username', username);
       setAvatar(avatar);
       setUsername(username);
       navigate('/home');
@@ -81,55 +85,62 @@ const Login: React.FC = () => {
           />
         </div>
   
-        {/* Form */}
         <form onSubmit={handleLogin}>
-          {error && (
-            <div className="text-red-500 text-sm mb-4">{error}</div>
-          )}
-  
-          {/* Input email */}
-          <div className="mb-4">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your email"
-              required
-              autoComplete="email"
-            />
-          </div>
-  
-          {/* Input password */}
-          <div className="mb-6">
-            <label
-              className="block text-sm font-medium text-gray-700 mb-1"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
-              required
-              autoComplete="current-password"
-            />
-          </div>
-  
-          {/* Submit button */}
-          <Button type="submit" className="w-full">Login</Button>
-        </form>
+      {error && (
+        <div className="text-red-500 text-sm mb-4">{error}</div>
+      )}
+
+      {/* Input email */}
+      <div className="mb-4">
+        <label
+          className="block text-sm font-medium text-gray-700 mb-1"
+          htmlFor="email"
+        >
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter your email"
+          required
+          autoComplete="email"
+        />
+      </div>
+
+      {/* Input password */}
+      <div className="mb-6 relative">
+        <label
+          className="block text-sm font-medium text-gray-700 mb-1"
+          htmlFor="password"
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter your password"
+          required
+          autoComplete="current-password"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute top-2/3 right-3 transform -translate-y-2/4 text-gray-500 hover:text-gray-700"
+          aria-label="Toggle password visibility"
+        >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
+
+      {/* Submit button */}
+      <Button type="submit" className="w-full">Login</Button>
+    </form>
   
         {/* Divider */}
         <div className="my-4 flex items-center before:flex-1 before:border-t before:border-neutral-300 after:flex-1 after:border-t after:border-neutral-300">

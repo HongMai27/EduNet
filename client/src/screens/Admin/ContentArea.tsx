@@ -4,6 +4,8 @@ import PostManagement from "./PostManagement";
 import ReportManagement from "./ReportManagement";
 import { useMatch } from "react-router-dom";
 import PostDetails from "./ReportDetail";
+import StatisticalPage from "./Statistical";
+import SettingPage from "./Setting";
 
 interface ContentAreaProps {
   selectedMenu: string;
@@ -24,6 +26,10 @@ const ContentArea: React.FC<ContentAreaProps> = ({ selectedMenu, users }) => {
       return <PostManagement />;
     case "report":
       return <ReportManagement />;
+    case "statistical":
+      return <StatisticalPage />;
+    case "setting":
+      return <SettingPage />;
     case "search":
       return (
         <div className="p-6">

@@ -1,16 +1,17 @@
 import React from "react";
-import { FaUser, FaCog, FaListAlt, FaChartBar } from "react-icons/fa"; // Các icon ví dụ
+import { FaUser, FaCog, FaListAlt, FaChartBar } from "react-icons/fa"; 
 
 interface SidebarProps {
   setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;
   adminUsername: string;
   adminAvatar: string;
-  selectedMenu: string; // Added to track the selected menu
+  selectedMenu: string; 
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenu, adminUsername, adminAvatar, selectedMenu }) => {
+  
   return (
-    <div className="bg-blue-900 text-white w-64 p-4 min-h-screen">
+    <div className="bg-blue-900 text-white w-64 p-4 min-h-screen fixed">
       <div className="flex flex-col items-center text-center mb-6">
         <img
           src={adminAvatar} 
@@ -41,14 +42,14 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenu, adminUsername, admin
           <FaListAlt className="inline mr-2" /> Report Management
         </li>
         <li
-          className={`cursor-pointer p-2 rounded ${selectedMenu === "analytics" ? "font-bold bg-gray-700" : "hover:bg-gray-700"}`}
-          onClick={() => setSelectedMenu("analytics")}
+          className={`cursor-pointer p-2 rounded ${selectedMenu === "statistical" ? "font-bold bg-gray-700" : "hover:bg-gray-700"}`}
+          onClick={() => setSelectedMenu("statistical")}
         >
           <FaChartBar className="inline mr-2" /> Statistical
         </li>
         <li
-          className={`cursor-pointer p-2 rounded ${selectedMenu === "settings" ? "font-bold bg-gray-700" : "hover:bg-gray-700"}`}
-          onClick={() => setSelectedMenu("settings")}
+          className={`cursor-pointer p-2 rounded ${selectedMenu === "setting" ? "font-bold bg-gray-700" : "hover:bg-gray-700"}`}
+          onClick={() => setSelectedMenu("setting")}
         >
           <FaCog className="inline mr-2" /> Setting
         </li>

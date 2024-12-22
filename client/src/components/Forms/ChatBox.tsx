@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAuth } from "../../stores/AuthContext";
 import { io } from "socket.io-client";
 import { IMessage } from "../../types/IMessage";
-import { FaPhone, FaRegWindowMaximize, FaVideo } from "react-icons/fa";
+import { FaPaperPlane, FaPhone, FaRegWindowMaximize, FaVideo } from "react-icons/fa";
 import ChatModal from "../Modals/ChatMini";
 import { useChat } from "../../stores/ChatMiniContext";
 import Header from "./HeaderChatForm";
@@ -13,7 +13,7 @@ const Chat: React.FC<{ receiverId: string }> = ({ receiverId }) => {
   const { userId } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [content, setContent] = useState("");
-  // const [isChatOpen, setChatOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null); 
   const token = localStorage.getItem('accessToken');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -318,7 +318,7 @@ const endCall = () => {
                   className={`p-3 rounded-3xl max-w-xl w-fit ${
                     message.sender === userId
                       ? "bg-blue-500 text-white"
-                      : "bg-gray-300 text-black"
+                      : "bg-gray-300 text-black dark:bg-gray-600"
                   }`}
                 >
                   <p>{message.content}</p>
@@ -337,7 +337,7 @@ const endCall = () => {
               <div ref={messagesEndRef} />
 
       </div>
-      <div className="p-4 bg-white border-t border-gray-300">
+      <div className="p-4 bg-white border-t border-gray-300 dark:bg-gray-800">
         <div className="flex">
           <input
             type="text"
@@ -347,11 +347,12 @@ const endCall = () => {
             onChange={(e) => setContent(e.target.value)}
           />
           <button
-            className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md"
-            onClick={handleSendMessage}
-          >
-            Send
-          </button>
+          onClick={handleSendMessage}
+          className="ml-2 bg-blue-500 text-white p-1 rounded"
+          disabled={loading}
+        >
+          {loading ? "Sending..." : <FaPaperPlane />}
+        </button>
         </div>
       </div>
 

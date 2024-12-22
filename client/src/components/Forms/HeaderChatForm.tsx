@@ -10,7 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ receiverInfo, startCall, handleToggleChat }) => {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gray-100 border-b border-gray-300">
+    <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gray-100 border-b border-gray-300 dark:bg-gray-800">
       <div className="flex items-center space-x-4">
         {receiverInfo && (
           <>

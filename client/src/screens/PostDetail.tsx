@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IPost } from "../types/IPost";
 import PostActions from "../components/Forms/PostActions";
 import useFormattedTimestamp from "../hooks/useFormatTimestamp";
 import useAddcmt from "../hooks/useAddcmt";
 import useLikeForPost from "../hooks/useLikeForPost";
-import { deleteComment, editComment, fetchPostDetail } from "../services/postService";
+import { deleteComment, deletePost, editComment, fetchPostDetail } from "../services/postService";
 import DropdownMenuButton from "../components/Forms/DropdownMenu";
 import { toast } from "react-toastify";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { useAuth } from "../stores/AuthContext";
-import { useUser } from "../hooks/useUserInfor";
 import DeleteConfirmationModal from "../components/Modals/DeleteModal";
+import { IComment } from "../types/IComment";
+import DeleteCommentModal from "../components/Modals/DeleteCommentModal";
 
 const PostDetail: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -20,18 +20,17 @@ const PostDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { formatTimestamp } = useFormattedTimestamp();
   const { handleLike } = useLikeForPost();
-  const {userId} = useAuth();
-  const { user } = useUser(userId);
   const { handleAddComment } = useAddcmt();
   const [showDeleteModal, setShowDeleteModal] = useState(false); 
   const [showEditModal, setShowEditModal] = useState(false); 
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null); 
   const [editContent, setEditContent] = useState<string>('');
-  const [comments, setComments] = useState<any[]>([]); 
+  const [comments, setComments] = useState<IComment[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  
+  const navigate = useNavigate()
+
   useEffect(() => {
     const fetchDetail = async () => {
       if (postId) {
@@ -54,6 +53,7 @@ const PostDetail: React.FC = () => {
     fetchDetail();
   }, [postId]);
 
+  
   const openFullscreen = (type: 'image' | 'video', url: string) => {
     setMediaType(type);
     setMediaUrl(url);
@@ -66,18 +66,46 @@ const PostDetail: React.FC = () => {
     setMediaType(null);
   };
 
+  const handleDeletePost = async () => {
+    try {
+      await deletePost(postId!);  // Gọi API xóa bài viết
+      toast.success('Post deleted successfully');
+      navigate('/home');  // Chuyển hướng về trang Home sau khi xóa bài viết
+    } catch (err) {
+      toast.error('Failed to delete post: ' + (err as Error).message);
+    } finally {
+      setShowDeleteModal(false);
+    }
+  };
+
   //delete comment
   const handleConfirmDeleteComment = async (postId: string, commentId: string) => {
     try {
       await deleteComment(postId, commentId); 
-      toast.success('Comment deleted successfully');
 
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment._id !== commentId) 
+      );
+  
+      setPost((prevPost) => {
+        if (!prevPost) {
+          return prevPost; 
+        }
+  
+        return {
+          ...prevPost,
+          comments: prevPost.comments?.filter((comment) => comment._id !== commentId),
+        };
+      });
+  
+      toast.success('Comment deleted successfully');
     } catch (err) {
       toast.error('Failed to delete comment: ' + (err as Error).message);
     } finally {
       setShowDeleteModal(false); 
     }
   };
+  
 
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
@@ -125,7 +153,7 @@ const PostDetail: React.FC = () => {
             <span className="inline-block px-2 py-1 text-sm text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900">
               {post.tag.tagname}
             </span>
-            <DropdownMenuButton post={post} />
+            <DropdownMenuButton post={post} onDelete={handleDeletePost} />
           </div>
         </div>
         <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
@@ -160,7 +188,8 @@ const PostDetail: React.FC = () => {
           postId={post._id}
           likes={post.likes || []}
           onLike={(postId, isLiked) => handleLike(postId, isLiked, setPost)}
-          onAddComment={handleAddComment}
+          onAddComment={handleAddComment} 
+          setComments={setComments} // Truyền setComments vào PostActions
         />
       </div>
       {/* comment part */}
@@ -214,12 +243,11 @@ const PostDetail: React.FC = () => {
 
             {/* modal delete comment */}
             {showDeleteModal && (
-        <DeleteConfirmationModal
-          onConfirm={() => handleConfirmDeleteComment(post._id, comment._id)} 
-          onCancel={handleCancelDelete}  
-        />
-      )}
-
+            <DeleteCommentModal
+              onConfirm={() => handleConfirmDeleteComment(post._id, comment._id)} 
+              onCancel={handleCancelDelete}  
+            />
+          )}
 
             {/* Modal edit */}
             {showEditModal && (
