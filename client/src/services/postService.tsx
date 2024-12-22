@@ -1,5 +1,6 @@
 import axios from "axios";
 import { IPost } from "../types/IPost";
+import { toast } from "react-toastify";
 
 const API_URL = 'http://localhost:5000/api/posts';
 
@@ -182,9 +183,44 @@ export const getSavedPosts = async (userId: string): Promise<any> => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;  // Trả về danh sách bài viết đã lưu
+    return response.data;  
   } catch (error) {
     console.error('Error fetching saved posts:', error);
-    throw error;  // Nếu có lỗi, ném lỗi ra ngoài
+    throw error; 
+  }
+};
+
+//create report
+export const reportPost = async (
+  postId: string,
+  reason: string,
+  accessToken: string
+): Promise<any> => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/reports`,
+      {
+        reportedEntityId: postId,
+        entityType: "Post",
+        reason: reason,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return { msg: response.data.msg }; 
+    }
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {  
+      toast.error(error.response?.data?.msg || "An error occurred while reporting the post.");
+    } else if (error instanceof Error) {
+      toast.error(error.message);  
+    } else {
+      toast.error("An unknown error occurred.");
+    }
   }
 };
