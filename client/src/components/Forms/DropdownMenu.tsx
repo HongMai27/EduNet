@@ -2,21 +2,33 @@ import React, { useEffect, useState } from 'react';
 import { FaEllipsisV } from 'react-icons/fa';
 import { IPost } from '../../types/IPost';
 import { useAuth } from '../../stores/AuthContext';
-import { deletePost, savePost, unsavePost } from '../../services/postService';
+import { deletePost, reportPost, savePost, unsavePost } from '../../services/postService';
 import { useNavigate } from 'react-router-dom';
 import DeleteConfirmationModal from '../Modals/DeleteModal';
 import { toast } from 'react-toastify';
+import ReportModal from '../Modals/ReportModal';
+import { sendStar } from '../../services/userService';
 
 interface DropdownMenuButtonProps {
   post: IPost;
+  onDelete: (postId: string) => void;
 }
 
-const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
+const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post, onDelete }) => {
   const { userId } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false); 
   const [showDeleteModal, setShowDeleteModal] = useState(false); 
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  const reasons = [
+    'Spam or misleading',
+    'Hate speech or abusive content',
+    'Violence or harmful behavior',
+    'Sexually explicit content',
+    'Other',
+  ];
 
   const toggleDropdown = (e: React.MouseEvent<SVGElement, MouseEvent>) => {
     e.stopPropagation();
@@ -53,11 +65,7 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
     try {
       await deletePost(post._id); 
       toast.success('Post deleted successfully');
-  
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000); 
+      onDelete(post._id);
   
     } catch (err) {
       toast.error('Failed to delete post: ' + (err as Error).message);
@@ -66,6 +74,35 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
       setShowDeleteModal(false); 
     }
   };
+  
+  const handleReport = async (reason: string) => {
+    if (!reason) {
+      toast.error('Please select a reason for reporting.');
+      return;
+    }
+
+    const accessToken = localStorage.getItem('accessToken'); 
+    const reportedEntityId = post._id;
+    if (!reportedEntityId) {
+      toast.error('You must be logged in to report');
+      return;
+    }
+    if (!accessToken) {
+      toast.error('You must be logged in to report');
+      return;
+    }
+
+    try {
+      await reportPost(reportedEntityId, reason, accessToken);
+      toast.success('Post reported successfully!');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Error reporting post.";
+      toast.error(errorMsg);
+    } finally {
+      setIsReportModalOpen(false); 
+    }
+  };
+
   
   const handleCancelDelete = () => {
     setShowDeleteModal(false); 
@@ -113,6 +150,7 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg dropdown-menu">
           <ul className="list-none p-2">
+          {userId === post.user?._id ? (
             <li
               onClick={handleDelete}
               className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -120,6 +158,16 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
               <i className="fas fa-trash mr-2 text-black dark:text-white"></i>
               Delete
             </li>
+          ):(
+            <li
+              onClick={()=> sendStar(post.user._id)}
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <i className="fas fa-star mr-2 text-black dark:text-white"></i>
+              Send star
+            </li>
+          )}
+
             {userId === post.user?._id ? (
               <li
                 onClick={handleRedirectToEdit} 
@@ -130,7 +178,7 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
               </li>
             ) : (
               <li
-                onClick={() => alert('Reported!')}
+                onClick={() => setIsReportModalOpen(true)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <i className="fas fa-flag mr-2 text-black dark:text-white"></i>
@@ -154,6 +202,13 @@ const DropdownMenuButton: React.FC<DropdownMenuButtonProps> = ({ post }) => {
           onCancel={handleCancelDelete}  
         />
       )}
+      {/* Report Modal */}
+      <ReportModal
+        isVisible={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmitReport={handleReport}
+        reasons={reasons}
+      />
     </div>
   );
 };
