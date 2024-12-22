@@ -1,16 +1,15 @@
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import { fetchPostDetail } from '../services/postService';
 
 const socket = io('http://localhost:5000');
 
 const useAddcmt = () => {
   const handleAddComment = async (
-    postId: string, 
-    content: string, 
-    username: string, 
-    userId: string, 
-    avatar: string, 
+    postId: string,
+    content: string,
+    username: string,
+    userId: string,
+    avatar: string,
     setComments: React.Dispatch<React.SetStateAction<any[]>>
   ) => {
     if (!content.trim()) {
@@ -38,10 +37,16 @@ const useAddcmt = () => {
 
       console.log('Comment added:', response.data);
 
-      const fetchedPost = await fetchPostDetail(postId); // Lấy lại dữ liệu bài viết
-      setComments(fetchedPost.comments || []);
-      // Cập nhật bình luận mới vào state
-      setComments((prevComments) => [...prevComments, response.data]);
+      // Thêm bình luận mới vào danh sách bình luận hiện tại
+      setComments((prevComments) => [
+        ...prevComments,
+        {
+          ...response.data, // Dữ liệu bình luận trả về từ API
+          username,
+          userId,
+          avatar
+        }
+      ]);
 
       // Gửi thông báo đến server qua socket
       const notificationData = {
