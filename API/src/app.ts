@@ -103,6 +103,11 @@ io.on('connection', (socket) => {
       }
   
       const ownerId = post.user._id.toString();
+      if (userId === ownerId) {
+        console.log(`Notification not sent. User ${userId} is the owner of the post ${postId}.`);
+        return;
+      }
+      
       const message =
       type === 'like'
         ? `${username} liked your post.`
@@ -112,6 +117,8 @@ io.on('connection', (socket) => {
         ? `${username} shared your post.`
         : type === 'save'
         ? `${username} saved your post.`
+        : type === 'reported'
+        ? `${username} deleted your post because of reported`
         : type === 'follow'
         ? `${username} started following you.`
         : 'You have a new notification.';
