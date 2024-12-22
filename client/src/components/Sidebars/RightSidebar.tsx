@@ -4,9 +4,10 @@ import { IUser } from '../../types/IUser';
 import useFormattedTimestamp from '../../hooks/useFormatTimestamp';
 import axios from 'axios';
 import FollowButton from '../Forms/FollowButton';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate từ react-router-dom
+import { useNavigate } from 'react-router-dom'; 
 import ChatMini from '../Forms/ChatMini';
-import { useChat } from '../../stores/ChatMiniContext'; // Import useChat
+import { useChat } from '../../stores/ChatMiniContext'; 
+import { toast } from 'react-toastify';
 
 const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
   const [friends, setFriends] = useState<IUser[]>([]);
@@ -52,12 +53,21 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
     const loadFollows = async () => {
       try {
         const response = await fetchFollow();
-        setFollowings(Array.isArray(response.followings) ? response.followings : []);
+        const followingsData = Array.isArray(response.followings) ? response.followings : [];
+        const followersData = Array.isArray(response.followers) ? response.followers : [];
+  
+        // Log dữ liệu followings và followers
+        console.log('Followings:', followingsData);
+        console.log('Followers:', followersData);
+  
+        setFollowings(followingsData);
+        setFollowers(followersData);
       } catch (error) {
         console.error('Error fetching followings:', error);
         setError('Error fetching followings');
       }
     };
+  
     loadFollows();
   }, []);
 
@@ -83,8 +93,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
   const handleAddFriend = async (targetUserId: string) => {
     try {
       const response = await addFriend(targetUserId);
-      alert(response.message);
-      window.location.reload();
+      toast.success(response.message);
     } catch (error) {
       console.error("Error following user:", error);
       alert("Error adding friend. Please try again.");
@@ -111,7 +120,7 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div className={`fixed right-0 w-72 h-screen bg-white dark:bg-gray-800 p-4 mt-20 shadow-md ${className}`}>
       {/* Friends */}
-      <div className="mb-4">
+      <div className="mb-4" >
         <h2 className="text-lg font-semibold mb-4 dark:text-white">Friends</h2>
         {error && <p className="text-red-500">{error}</p>}
         {friends.length === 0 ? (
@@ -119,7 +128,11 @@ const RightSidebar: React.FC<{ className?: string }> = ({ className }) => {
         ) : (
           <ul className="space-y-4">
             {friends.map(friend => (
-              <li key={friend._id} className="flex items-center space-x-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+              <li 
+              key={friend._id} 
+              className="flex items-center space-x-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+              onClick={() => handleRedirectToProfile(friend._id)}
+              >
                 <img src={friend.avatar} alt={`${friend.username}'s avatar`} className="w-8 h-8 rounded-full" />
                 <div className="flex flex-col">
                   <span className="text-black dark:text-white">{friend.username}</span>

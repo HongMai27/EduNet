@@ -30,6 +30,7 @@ interface NewsFeedProps {
   userId: string;
   socket: Socket | null;
   userAvatar?: any;
+  onDeletePost: (postId: string) => void; 
 
 }
 
@@ -42,10 +43,12 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
   setPosts,
   userId,
   socket,
+  onDeletePost, 
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [comments, setComments] = useState<any[]>([]); 
   const { formatTimestamp } = useFormattedTimestamp();
   const navigate = useNavigate();
 
@@ -104,7 +107,7 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
               <span className="inline-block px-2 py-1 text-sm text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-900">
                 {post.tag.tagname}
               </span>
-              <DropdownMenuButton post={post} />
+              <DropdownMenuButton post={post} onDelete={onDeletePost} />
             </div>
           </div>
 
@@ -136,19 +139,24 @@ const NewsFeed: React.FC<NewsFeedProps> = ({
             </div>
           )}
 
-          {post.doc && (post.doc.endsWith(".pdf") || post.doc.endsWith(".doc") || post.doc.endsWith(".docx")) && (
+          {post.doc && post.doc.endsWith(".pdf") && (
             <div className="mb-4 flex justify-center">
-              <a href={post.doc} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                View Document
-              </a>
+              <embed 
+                src={post.doc} 
+                type="application/pdf" 
+                width="100%" 
+                height="600px" 
+              />
             </div>
           )}
 
+
           <PostActions
-            postId={post._id}
+            postId={post._id} 
             likes={post.likes || []}
             onLike={(postId, isLiked) => handleLike(postId, isLiked, setPosts, userId)} 
             onAddComment={handleAddComment}
+            setComments={setComments}
           />
 
          {/* FullscreenModal  */}

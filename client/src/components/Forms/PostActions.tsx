@@ -10,19 +10,20 @@ interface PostActionsProps {
   likes: string[];
   onLike: (postId: string, isLiked: boolean) => void;
   onAddComment: (
-    postId: string, 
-    content: string, 
-    username:string, 
-    userId:string, 
-    avatar: string, 
-    setComments: React.Dispatch<React.SetStateAction<any[]>>) => Promise<void>; 
+    postId: string,
+    content: string,
+    username: string,
+    userId: string,
+    avatar: string,
+    setComments: React.Dispatch<React.SetStateAction<any[]>>
+  ) => Promise<any>; // Thêm setComments vào kiểu
+  setComments: React.Dispatch<React.SetStateAction<any[]>>; // Truyền setComments vào
 }
-
 
 const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddComment }) => {
   const isLiked = likes.includes(localStorage.getItem('userId') || '');
-  const {userId, username, avatar} = useAuth();
-  const [commentContent, setCommentContent] = useState(''); 
+  const { userId, username, avatar } = useAuth();
+  const [commentContent, setCommentContent] = useState('');
   const [comments, setComments] = useState<any[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
@@ -30,16 +31,25 @@ const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddC
   const handleShowLikesModal = () => {
     setIsModalVisible(true);
   };
+
   const handleCloseModal = () => {
     setIsModalVisible(false);
   };
 
-  const handleCommentSubmit = () => {
-    if (commentContent.trim() && userId && username && avatar) { 
-      onAddComment(postId, commentContent, username, userId, avatar, setComments);
-      setCommentContent(''); 
+  const handleCommentSubmit = async () => {
+    if (commentContent.trim() && userId && username && avatar) {
+      try {
+        const newComment = await onAddComment(postId, commentContent, username, userId, avatar, setComments);
+  
+        setComments((prevComments) => [...prevComments, newComment]); 
+  
+        // Reset content của bình luận sau khi thêm xong
+        setCommentContent('');
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      }
     } else {
-      console.error('User information is incomplete.');
+      console.error(userId, username, avatar);
     }
   };
   
@@ -47,41 +57,41 @@ const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddC
   return (
     <div className="flex flex-col space-y-2">
       <div className="flex justify-around text-sm text-gray-500 dark:text-gray-400 mb-4">
-      <div className="flex items-center space-x-2">
-        {/* Icon Like */}
-        <FaThumbsUp
-          className={`w-5 h-5 cursor-pointer ${isLiked ? 'text-blue-500' : 'hover:text-blue-500'}`}
-          onClick={() => onLike(postId, isLiked)} 
-        />
-        {/* Sl Like  */}
-        <span
-          className="cursor-pointer hover:text-blue-500"
-          onClick={handleShowLikesModal} 
+        <div className="flex items-center space-x-2">
+          {/* Icon Like */}
+          <FaThumbsUp
+            className={`w-5 h-5 cursor-pointer ${isLiked ? 'text-blue-500' : 'hover:text-blue-500'}`}
+            onClick={() => onLike(postId, isLiked)} 
+          />
+          {/* Sl Like  */}
+          <span
+            className="cursor-pointer hover:text-blue-500"
+            onClick={handleShowLikesModal} 
+          >
+            {likes.length} Like{likes.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* Comment Button */}
+        <button
+          className="flex items-center space-x-2 hover:text-blue-500"
+          onClick={() => navigate(`/detail/${postId}`)}
         >
-          {likes.length} Like{likes.length !== 1 ? 's' : ''}
-        </span>
+          <FaComment className="w-5 h-5" />
+          <span>Comment</span>
+        </button>
+
+        {/* Share Button */}
+        <button className="flex items-center space-x-2 hover:text-blue-500" onClick={() => {}}>
+          <FaShare className="w-5 h-5" />
+          <span>Share</span>
+        </button>
+
+        {/* Modal hiển thị danh sách người like */}
+        <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
+          <LikeListForm postId={postId} onClose={handleCloseModal} />
+        </Modal>
       </div>
-
-      {/* Comment Button */}
-      <button
-        className="flex items-center space-x-2 hover:text-blue-500"
-        onClick={() => navigate(`/detail/${postId}`)}
-      >
-        <FaComment className="w-5 h-5" />
-        <span>Comment</span>
-      </button>
-
-      {/* Share Button */}
-      <button className="flex items-center space-x-2 hover:text-blue-500" onClick={() => {}}>
-        <FaShare className="w-5 h-5" />
-        <span>Share</span>
-      </button>
-
-      {/* Modal hiển thị danh sách người like */}
-      <Modal isVisible={isModalVisible} onClose={handleCloseModal}>
-        <LikeListForm postId={postId} onClose={handleCloseModal} />
-      </Modal>
-    </div>
 
       {/* Comment Input */}
       <div className="flex items-center">
@@ -93,7 +103,7 @@ const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddC
           onChange={(e) => setCommentContent(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              e.preventDefault(); 
+              e.preventDefault();
               handleCommentSubmit(); 
             }
           }} 
@@ -105,7 +115,6 @@ const PostActions: React.FC<PostActionsProps> = ({ postId, likes, onLike, onAddC
           Comment
         </button>
       </div>
-
     </div>
   );
 };
