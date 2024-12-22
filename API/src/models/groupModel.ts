@@ -6,7 +6,7 @@ export interface IGroup extends Document {
   avtgr?:string;
   members: mongoose.Schema.Types.ObjectId[];
   admin: mongoose.Schema.Types.ObjectId;
-  post: mongoose.Schema.Types.ObjectId[];
+  posts: mongoose.Schema.Types.ObjectId[];
   createdAt: string;
 }
 
@@ -27,7 +27,7 @@ const GroupSchema: Schema = new Schema({
       type: Schema.Types.ObjectId, 
       ref: "User" 
     }],
-    post: [
+    posts: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Post", 

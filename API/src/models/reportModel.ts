@@ -6,6 +6,7 @@ export interface IReport extends Document {
   entityType: "Post" | "User";
   reason: string;
   createdAt: Date;
+  status: string;
 }
 
 const ReportSchema: Schema<IReport> = new Schema(
@@ -24,6 +25,11 @@ const ReportSchema: Schema<IReport> = new Schema(
       type: String,
       enum: ["Post", "User"],
       required: true,
+    },
+    status: { 
+      type: String, 
+      enum: ["pending", "resolved", "rejected"], 
+      default: "pending" 
     },
     reason: {
       type: String,

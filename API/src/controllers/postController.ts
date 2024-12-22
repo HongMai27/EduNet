@@ -30,7 +30,7 @@ export const getPostById = async (req: Request, res: Response) => {
   const { id } = req.params; 
   try {
     const post = await Post.findById(id)
-      .populate("user", "username avatar")
+      .populate("user", "username avatar point email birthday lastActive")
       .populate("tag", "tagname")
       .populate({
         path: "comments", 
@@ -113,7 +113,7 @@ export const createPost = async (req: AuthRequest, res: Response) => {
     if (existingGroup) {
       await Group.findByIdAndUpdate(
         existingGroup._id,
-        { $push: { post: post._id } },
+        { $push: { posts: post._id } },
         { new: true }
       );
     }

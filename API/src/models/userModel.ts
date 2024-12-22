@@ -12,7 +12,7 @@ export interface IUser extends Document {
   address?: string;
   avatar: string;
   imgcover:string;
-  point?: number;
+  point: number;
   savedPosts: mongoose.Schema.Types.ObjectId[];
   followers: mongoose.Schema.Types.ObjectId[];
   followings: mongoose.Schema.Types.ObjectId[];
@@ -21,6 +21,7 @@ export interface IUser extends Document {
   lastActive?: string; 
   posts: mongoose.Schema.Types.ObjectId[]; 
   comments: mongoose.Schema.Types.ObjectId[];
+  notifications: mongoose.Schema.Types.ObjectId[];
   comparePassword: (password: string) => Promise<boolean>;
   resetPasswordToken?: string; 
   resetPasswordExpires?: Date; 
@@ -103,6 +104,11 @@ const userSchema: Schema<IUser> = new Schema({
   comments: [{ 
     type: Schema.Types.ObjectId, 
     ref: "Comment",
+    required: true
+  }],
+  notifications: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: "Notification",
     required: true
   }],
   resetPasswordToken: { 

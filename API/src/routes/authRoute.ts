@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { register, login, googleLogin, forgotPassword, changePassword } from "../controllers/authController";
-import { editProfile, followUser, getAllUser,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, getUserbyId, searchUserByUsername, suggestFriend, unfollowUser, updateStatus, updateUserStatus } from "../controllers/userController";
+import { editProfile, followUser, getAllUser,  getAllUserPoint,  getFriendsWithStatus,  getUserFollowersAndFollowings, getUserProfile, getUserbyId, searchUserByUsername, sendStar, suggestFriend, unfollowUser, updateStatus, updateUserStatus } from "../controllers/userController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { getMess, sendMess } from "../controllers/messageController";
 import { deleteNotification, getNotifications, markAsRead, sendNotification } from "../controllers/notificationController";
 import { suggestFriends } from "../controllers/geolocationController";
+import { approveReport } from "../controllers/reportedController";
 
 const router = Router();
     
@@ -17,6 +18,7 @@ router.put('/change-pass', authMiddleware, changePassword)
 
 //profile
 router.get('/', getAllUser)
+router.get('/getpoint', getAllUserPoint)
 router.get('/userinfor/:id', getUserbyId)
 router.get('/user/:id', getUserProfile);
 router.put('/user/:id', authMiddleware, editProfile)
@@ -44,7 +46,9 @@ router.put('/notifications/:id', authMiddleware, markAsRead)
 router.delete('/notifications/:id', authMiddleware, deleteNotification)
 
 
-
+//sendstar
+router.put('/user/:id/sendstar', sendStar)
+router.post("/reports/:reportId/approve", authMiddleware, approveReport);
 
 
 //search

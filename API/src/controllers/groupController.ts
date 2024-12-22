@@ -94,16 +94,21 @@ interface AuthRequest extends Request {
         .populate("admin", "username avatar")  
         .populate("members", "username avatar") 
         .populate({
-          path: "post", 
-          select: "content date user tag image video",  
-          populate: [{
-            path: "user", 
-            select: "username avatar",  
-          },
-          {
-            path: "tag",
-            select: "tagname"
-          }],
+          path: 'posts',
+          populate: [
+            { 
+              path: 'user',
+              select: 'avatar username', 
+            },
+            { 
+              path: 'tag', 
+              select: 'tagname', 
+            },
+            {
+              path: 'group',
+              select: "name avtgr"
+            }
+          ],
           options: { sort: { date: -1 } }, 
         })
         .exec();
@@ -119,11 +124,66 @@ interface AuthRequest extends Request {
         createdAt: group.createdAt,
         admin: group.admin,  
         members: group.members,  
-        posts: group.post,  
+        posts: group.posts,  
       });
     } catch (err) {
       console.error(err);
       res.status(500).json({ msg: "Server error" });
     }
   };
+
+  export const updateGroupInfoAndAddMembers = async (req: AuthRequest, res: Response) => {
+    const groupId = req.params.id; 
+    const { name, description, members } = req.body;
+    const userId = req.userId; 
+    
+    try {
+      const group = await Group.findById(groupId);
+      if (!group) {
+        return res.status(404).json({ msg: "Group not found." });
+      }
+  
+      if (group.admin.toString() !== userId) {
+        return res.status(403).json({ msg: "You are not authorized to edit this group." });
+      }
+  
+      if (name && typeof name === "string") {
+        group.name = name;
+      }
+      if (description && typeof description === "string") {
+        group.description = description;
+      }
+  
+      // Kiểm tra nếu có thành viên muốn thêm vào nhóm
+      if (members && members.length > 0) {
+        const validMembers = await User.find({ _id: { $in: members } });
+        if (validMembers.length !== members.length) {
+          return res.status(400).json({ msg: "Some members are invalid." });
+        }
+  
+        group.members = [...new Set([...group.members, ...members])]; 
+      }
+  
+      await group.save();
+  
+      if (members && members.length > 0) {
+        await User.updateMany(
+          { _id: { $in: members } }, 
+          { $push: { groups: groupId } } 
+        );
+      }
+  
+      console.log("Group updated successfully");
+      res.status(200).json(group);  
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error:", err.message);
+        res.status(500).json({ msg: "Server error", error: err.message });
+      } else {
+        console.error("Unknown error:", err);
+        res.status(500).json({ msg: "Server error" });
+      }
+    }
+  };
+  
   

@@ -4,7 +4,7 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import { getPostLikes, likePost, unlikePost } from "../controllers/likeController";
 import { addComment, deleteComment, editComment, getComments,  } from "../controllers/commentController";
 import { addTag, getTags  } from "../controllers/tagController";
-import { createGroup, getGroupDetails, getGroups } from "../controllers/groupController";
+import { createGroup, getGroupDetails, getGroups, updateGroupInfoAndAddMembers } from "../controllers/groupController";
 import { createReport, getAllReports, getReportById, getReports } from "../controllers/reportedController";
 
 const router = Router();
@@ -46,5 +46,7 @@ router.post('/addtag', addTag);
 
 //group
 router.post('/group', authMiddleware, createGroup);
+router.put('/group/:id', authMiddleware, updateGroupInfoAndAddMembers);
+
 
 export default router;
